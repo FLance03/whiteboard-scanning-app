@@ -1,0 +1,21 @@
+countState = 0
+for ind in range(len(wordsHeadTail)):
+    # countState => 3 if both previous elements was isolated, 2 if only the previous one, and so forth...
+    if wordsHeadTail[ind, 1] != 2:
+        filterHeadTail.append(wordsHeadTail[ind])
+        countState >>= 1
+    else:
+        if ind < len(wordsHeadTail) - 2:
+            if (countState&2 == 0 and np.any(wordsHeadTail[ind+1: ind+3, 1] != 2) or
+                    countState == 2 and wordsHeadTail[ind+1, 1] != 2):
+                # If the previous element was not isolated and one of the next two are not, or;
+                # If only the previous element was isolated (not the previous2x), make sure the next one is not
+                filterHeadTail.append(wordsHeadTail[ind])
+        elif ind == len(wordsHeadTail) - 2:
+            if countState&2 == 0 or countState == 2 and wordsHeadTail[ind+1, 1] != 2:
+                filterHeadTail.append(wordsHeadTail[ind])
+        else:
+            if countState != 3:
+                filterHeadTail.append(wordsHeadTail[ind])
+        countState >>= 1
+        countState |= 2
