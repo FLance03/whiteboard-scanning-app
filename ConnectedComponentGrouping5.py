@@ -52,15 +52,16 @@ def FilterPhrasesFromSortedWords(deleteWordsHeadTail, phrasesHeadTail):
     # Assumes that the head in deleteWordsHeadTail is sorted
     wordInd, phraseInd = 0, 0
     filterPhrasesHeadTail = []
-    while wordInd < len(deleteWordsHeadTail) and phraseInd < len(phrasesHeadTail):
-        if deleteWordsHeadTail[wordInd][0] < phrasesHeadTail[phraseInd][0]:
-            wordInd += 1
-        elif deleteWordsHeadTail[wordInd][0] > phrasesHeadTail[phraseInd][0]:
+    while wordInd < len(deleteWordsHeadTail):
+        assert deleteWordsHeadTail[wordInd][0] >= phrasesHeadTail[phraseInd][0], "deleteWordsHeadTail has element not in phrasesHeadTail"
+        if deleteWordsHeadTail[wordInd][0] > phrasesHeadTail[phraseInd][0]:
             filterPhrasesHeadTail.append(phrasesHeadTail[phraseInd])
             phraseInd += 1
         else:
             wordInd += 1
             phraseInd += 1
+    for phraseHeadTail in phrasesHeadTail[phraseInd:]:
+        filterPhrasesHeadTail.append(phraseHeadTail)
     filterPhrasesHeadTail = np.array(filterPhrasesHeadTail)
     return filterPhrasesHeadTail
 
@@ -235,13 +236,14 @@ def DistanceBetweenLabels(labels, leftBox, rightBox):
 def FilterHeadTail(wordsHeadTail, phrasesHeadTail):
     deleteWordsHeadTail = np.tile(False, len(wordsHeadTail))
     for ind in range(len(wordsHeadTail) - 2):
-        if np.all(wordsHeadTail[ind: ind + 3, 1] == 2):
+        if np.all(wordsHeadTail[ind: ind + 3, 1] == 0):
             # Remove 3 consecutive isolated characters
             # deleteWordsHeadTail records the indices of such characters
             deleteWordsHeadTail[ind: ind + 3] = True
     filterWordsHeadTail = wordsHeadTail[np.logical_not(deleteWordsHeadTail)]
     # Change deleteWordsHeadTail from having the indices to accessing the actual elements to be deleted
     deleteWordsHeadTail = wordsHeadTail[deleteWordsHeadTail]
+    print(deleteWordsHeadTail)
     filterPhrasesHeadTail = FilterPhrasesFromSortedWords(deleteWordsHeadTail, phrasesHeadTail)
     deleteWordsHeadTail = np.tile(False, len(filterWordsHeadTail))
     for ind, word in enumerate(filterWordsHeadTail):
@@ -251,6 +253,7 @@ def FilterHeadTail(wordsHeadTail, phrasesHeadTail):
     filterWordsHeadTail = filterWordsHeadTail[np.logical_not(deleteWordsHeadTail)]
     deleteWordsHeadTail = filterWordsHeadTail[deleteWordsHeadTail]
     filterPhrasesHeadTail = FilterPhrasesFromSortedWords(deleteWordsHeadTail, filterPhrasesHeadTail)
+    print(filterPhrasesHeadTail)
     return filterWordsHeadTail, filterPhrasesHeadTail
 
 
@@ -375,6 +378,7 @@ for count in range(2):
                 phrasesHeadTail[-1].append(ind + 1)
                 wordsHeadTail = np.array(wordsHeadTail)
                 filterWordsHeadTail, filterPhrasesHeadTail = FilterHeadTail(wordsHeadTail, phrasesHeadTail)
+                print(filterWordsHeadTail, filterPhrasesHeadTail)
                 a = np.cos(theta)
                 b = np.sin(theta)
                 x0 = a * rho
