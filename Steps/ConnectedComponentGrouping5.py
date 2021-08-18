@@ -253,6 +253,7 @@ def FilterHeadTail(wordsHeadTail, phrasesHeadTail):
     filterPhrasesHeadTail = FilterPhrasesFromSortedWords(deleteWordsHeadTail, filterPhrasesHeadTail)
     return filterWordsHeadTail, filterPhrasesHeadTail
 
+
 def main(img):
     img = cv.threshold(img, 0, 255, cv.THRESH_OTSU)[1]
     notImg = cv.bitwise_not(img)
@@ -296,8 +297,9 @@ def main(img):
         runningThreshold = 20
         while runningThreshold > 2:
             lines = cv.HoughLines(pointsPlain, R, np.pi / 180, runningThreshold, None, 0, 0)
-            runningThreshold -= 1
-            if lines is not None:
+            if lines is None:
+                runningThreshold -= 1
+            else:
                 lines = lines.reshape(-1, 2)
                 if count == 0:
                     # Check first all lines with theta of 90 +- 5 degrees or 2.5 +- 2.5 degrees or 177.5 +- 2.5 degrees
@@ -306,6 +308,9 @@ def main(img):
                     vertical = np.bitwise_and(0 <= lines[:, 1], lines[:, 1] <= np.pi/36)
                     vertical = np.bitwise_or(vertical, np.bitwise_and(35*np.pi/36 <= lines[:, 1], lines[:, 1] <= np.pi))
                     lines = lines[np.bitwise_or(horizontal, vertical)]
+                    if len(lines) == 0:
+                        runningThreshold -= 1
+                        continue
                 deleteOutInd = []
                 lineInd = 0
                 # deleteOutInd is used at the last part of this loop where the points are finally chosen to be deleted
@@ -320,6 +325,7 @@ def main(img):
                     # but this inner loop removes those points (no deletions), the next iteration may then choose the same line
                 while lineInd < len(lines) and len(deleteOutInd) == 0:
                     rho, theta = lines[lineInd]
+                    lineInd += 1
                     inPointInds = GetInvolvedPoints(pointsPlain.shape, outPoints, (rho, theta), R, clusterSize=11)
                     inPointInds = outPoints[inPointInds, 2]
                     # Clustering factor = Average height in cluster / R
@@ -399,6 +405,8 @@ def main(img):
                             nonzeroY, nonzeroX = labels[top:bottom + 1, left:right + 1].nonzero()
                             phraseLabels[nonzeroY+top, nonzeroX+left] = phraseLabelCount
                     # deleteOutInd holds the indices in inPointsCenters that are currently being taken out of the image
+                    # On succeeding iterations deleteOutInd becomes an ndarray and has a different .append() method
+                    deleteOutInd = []
                     # inPointsCenters holds is the filtered and sorted version of outPoints
                     # inPointsCenters, at index 2 of each row, holds the respective index of outPoints
                     for head, tail in filterWordsHeadTail[:, [0, 2]]:
@@ -431,6 +439,9 @@ def main(img):
                     # for x, y in centers[inPointInds2]:
                     #     cv.circle(mimicColoredLabels, (x, y), 5, (0, 255, 0), -1)
                     #     cv.circle(mimicColoredLabels, (x, y), 3, (0, 0, 255), -1)
+                if len(deleteOutInd) == 0:
+                    # Nothing was deleted for the entire loop so reduce the runningThreshold the next iteration to progress
+                    runningThreshold -= 1
     for rowInd in range(len(wordLabels)):
         for colInd, label in enumerate(wordLabels[rowInd]):
             if label == 0 and labels[rowInd][colInd] != 0:
