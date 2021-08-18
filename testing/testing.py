@@ -57,27 +57,3 @@ def PlotIt(img):
     plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
     plt.title('Image')
     plt.show()
-
-
-# play = np.zeros((500, 500, 3), dtype=np.uint8)
-# img = np.zeros((500, 500), dtype=np.uint8)
-# img[1,2] = 255
-# img[2,50] = 255
-# img[1,100] = 255
-# lines = cv.HoughLines(img, 3, np.pi / 180, 2, None, 0, 0)
-# if lines is not None:
-#     lines = lines.reshape(-1, 2)
-#     print(lines)
-#     for line in lines:
-#         rho, theta = line
-#         a = np.cos(theta)
-#         b = np.sin(theta)
-#         x0 = a * rho
-#         y0 = b * rho
-#         pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-#         pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-#         print(pt1,pt2)
-#         cv.line(img, pt1, pt2, 255, 1, cv.LINE_AA)
-# PlotIt(img)
-# cv.waitKey()
-# cv.destroyAllWindows()
