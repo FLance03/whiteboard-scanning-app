@@ -7,7 +7,7 @@ from Steps import (SaturationAndOutlier2 as Step2,
 from testing import testing
 
 img = cv.imread('./testing/pics and texts/iotbinarized.jpg', 0)
-labels, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(img)
+labels, labelsInfo, textNonText, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(img)
 
 
 cv.imshow('Labels', testing.imshow_components(labels))

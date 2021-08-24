@@ -442,14 +442,20 @@ def main(img):
                 if len(deleteOutInd) == 0:
                     # Nothing was deleted for the entire loop so reduce the runningThreshold the next iteration to progress
                     runningThreshold -= 1
-    for rowInd in range(len(wordLabels)):
-        for colInd, label in enumerate(wordLabels[rowInd]):
-            if label == 0 and labels[rowInd][colInd] != 0:
-                # If the pixel is not labelled as a word but was originally labelled (after filter)
-                    # then include that as a label in nonTextLabels
-                nonTextLabels[rowInd][colInd] = 255
+    # textNonTextLocations is 1 if text, 2 if non-text, else 0
+    textNonTextLocations = np.zeros_like(labels, dtype=np.uint8)
+    for rowInd in range(len(labels)):
+        for colInd, label in enumerate(labels[rowInd]):
+            if label != 0:
+                if wordLabels[rowInd][colInd] == 0:
+                    # If the pixel is not labelled as a word but was originally labelled (after filter)
+                        # then include that as a label in nonTextLabels
+                    nonTextLabels[rowInd][colInd] = 255
+                    textNonTextLocations[rowInd][colInd] = 2
+                else:
+                    textNonTextLocations[rowInd][colInd] = 1
     nonTextLabels = cv.connectedComponents(nonTextLabels, connectivity=8)[1]
-    return labels, textLabels, wordLabels, phraseLabels, nonTextLabels
+    return labels, labelsInfo, textNonTextLocations, textLabels, wordLabels, phraseLabels, nonTextLabels
 
 # # for left, right, top, bottom, *other in filterInfo[inPointInds2]:
 # #     cv.rectangle(coloredLabels, (left, top), (right, bottom), (255, 255, 255), 1)
