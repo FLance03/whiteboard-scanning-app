@@ -12,7 +12,7 @@ def getcontours(img, imgContour):
     biggestA = 0
     for cnt in contours:
         area = cv.contourArea(cnt)
-        if area > 10000 and area > biggestA :
+        if area > 1000 and area > biggestA : # Change 1000 to a formula that's around 50% of the size of the picture
             cv.drawContours(imgContour, cnt, -1, (255,0,255), 2)
             biggestA = area
             peri = cv.arcLength(cnt, True)
