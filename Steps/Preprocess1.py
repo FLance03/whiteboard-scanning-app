@@ -13,7 +13,7 @@ cv.resizeWindow("Parameters", 640, 80)
 cv.createTrackbar("Threshold1", "Parameters", 75, 255, utils.empty)
 cv.createTrackbar("Threshold2", "Parameters", 0, 255, utils.empty)
 
-img = cv.imread('images/board5.jpg')
+img = cv.imread('images/redundancyfrontcropped.jpg')
 img2 = np.copy(img)
 
 # Automate final image dimensions
