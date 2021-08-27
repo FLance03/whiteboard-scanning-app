@@ -107,7 +107,12 @@ def main(img, CELLGROUPSIZE = 70, CELLSIZE = 15):
             # Partition at the 75% then get the mean from the top 75%
             flatCell = cell.reshape(-1,3)
             topQuartile = len(flatCell) - len(flatCell)//4
-            top25LumiCells[-1].append(np.round(np.mean(np.partition(flatCell, topQuartile, axis=0)[topQuartile:], axis=0)).astype(np.uint8))
+            if len(flatCell) < 4:
+                top25LumiCells[-1].append(
+                    np.round(np.mean(flatCell, axis=0)).astype(np.uint8))
+            else:
+                top25LumiCells[-1].append(np.round(np.mean(np.partition(flatCell, topQuartile, axis=0)[topQuartile:], axis=0)).astype(
+                        np.uint8))
     if len(top25LumiCells) * len(top25LumiCells[0]) >= 3:
         for x in range(0, len(top25LumiCells), CELLGROUPSIZE):
             for y in range(0, len(top25LumiCells[x]), CELLGROUPSIZE):
@@ -136,7 +141,7 @@ def main(img, CELLGROUPSIZE = 70, CELLSIZE = 15):
                     cell[:, :, index] = 255
                 else:
                     # Additional variable out since np.minimum gives float so assigning to some slice of cell with type uint cuts it to (mostly) 0
-                    # Also preferred this where instead of making the entire cell float, only the temp variable, out, is a floar
+                    # Also preferred this where instead of making the entire cell float, only the temp variable, out, is a float
                     out = np.minimum(1, cell[:, :, index]/colorChannelIntensity)
                     cell[:, :, index] = np.round((0.5 - 0.5 * np.cos(out ** 2 * np.pi)) * 255).astype(np.uint8)
             cells[row][col] = cell
