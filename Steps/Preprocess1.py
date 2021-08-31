@@ -1,7 +1,6 @@
 import cv2 as cv
 import numpy as np
 import math
-from skimage.draw import line
 
 # Notes:
 # - Threshold depends on image size and quality. If picture bugs try changing the threshold value
@@ -113,7 +112,6 @@ while True:
             pt2 = (int(x0 - width*(-b)), int(y0 - width*(a)))
 
             # Find actual points in x=0 and x=max-width
-            print(pt1)
             (pt1, pt2) = findLinePoints(pt1, pt2, res.shape[1])
 
             # Choosing the top line and bottom line
