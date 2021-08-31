@@ -3,9 +3,18 @@ import numpy as np
 import math
 from skimage.draw import line
 
-# Threshold depends on image size and quality. If picture bugs try changing the threshold value
-# For KB sized images 200 threshold is ideal, for MB 1000
-# Width for the equation in plotting houghlines isn't static 1000, more research needed
+# Notes:
+# - Threshold depends on image size and quality. If picture bugs try changing the threshold value
+# - For KB sized images 200 threshold is ideal, for MB 800
+# - Width for the equation in plotting houghlines isn't static 1000, more research needed
+
+# Concerns:
+# Might be a bit runtime heavy ? because it has to calculate for points at width 0 and witdh = max-width and
+# it does it for every line it finds in the houghline method. 
+
+# Possible work arounds:
+# - is to find a specific value for the hough lines equation instead of 1000 or 10000. 
+# - Modify perspective transform so that it works with values outside the width and height of an image (Because houghline equation gives values outside image height and wwidth)
 
 def empty():
     pass
