@@ -23,7 +23,6 @@ def SimpleLinearReg(x, y):
 def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
     rowSize = len(connComp)
     connComp = connComp.copy()
-    connComp[0, 8] = 9
     connComp[np.logical_and(connComp!=0, connComp!=labelNum)] = 0
     if minWidth < COL_WINDOW_SIZE:
         minWidth = COL_WINDOW_SIZE
@@ -36,7 +35,7 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
     if numExcessCol % nonOverlapSize != 0:
         remaining = numExcessCol % nonOverlapSize
         connComp = np.concatenate((connComp, np.zeros((rowSize, nonOverlapSize - remaining))), axis=1).astype(np.uint64)
-    assert((len(connComp[0]) - COL_WINDOW_SIZE) % (COL_WINDOW_SIZE - COL_OVERLAP_SIZE) == 0)
+    assert (len(connComp[0]) - COL_WINDOW_SIZE) % (COL_WINDOW_SIZE - COL_OVERLAP_SIZE) == 0
     stop = len(connComp[0]) - COL_WINDOW_SIZE + 1
     step = COL_WINDOW_SIZE - COL_OVERLAP_SIZE
     features = []
@@ -118,15 +117,20 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
     return features, changeFeatures
 
 
-def main(labels, labelInfo, labelNum):
-    left, right, top, bottom = labelInfo[:4]
+def main(labels, labelNum):
+    # For all labels that match the labelNum in labels, turn it to label 1 else 0 it
+    labels = np.where(labels==labelNum, 1, 0)
+    # Step5.GetLabelsInfo() should return only one row of the 2d array where the first 4
+    #    elements are left, right, top, and bottom of the rectangle
+    assert len(Step5.GetLabelsInfo(labels)) == 1, "Two different labels in labels"
+    left, right, top, bottom, *_ = labelInfo = Step5.GetLabelsInfo(labels)[0]
     start = top
     # The number of rows in one chunks is 2*ROW_OVERLAP_SIZE and overlaps half of the rows (ROW_OVERLAP_SIZE)
     stop = bottom - 2*(ROW_OVERLAP_SIZE - 1)
     features = []
     for i in range(start, stop, ROW_OVERLAP_SIZE):
         # Get the features per chunks of 2*ROW_OVERLAP_SIZE rows with ROW_OVERLAP_SIZE rows overlapping
-        featureData = ExtractFeatures(labels[i:i + 2*ROW_OVERLAP_SIZE, left:right+1], labelNum)
+        featureData = ExtractFeatures(labels[i:i + 2*ROW_OVERLAP_SIZE, left:right+1], 1)
         features.append(np.concatenate((featureData[0], featureData[1]), axis=1))
     if stop <= start:
         # The loop did not run even once
@@ -136,11 +140,10 @@ def main(labels, labelInfo, labelNum):
         # The loop ran at least once but was not able to cover all (some of the last elements
         #   were not processed)
         # lastInd = top + (stop - start - 1) // ROW_OVERLAP_SIZE * ROW_OVERLAP_SIZE
-        featureData = ExtractFeatures(labels[i+ROW_OVERLAP_SIZE:bottom+1, left:right+1], labelNum)
+        featureData = ExtractFeatures(labels[i+ROW_OVERLAP_SIZE:bottom+1, left:right+1], 1)
         features.append(np.concatenate((featureData[0], featureData[1]), axis=1))
     features = np.array(features, dtype=np.float32)
-    testing.FullPrint2('print2', features)
-    return features
+    return features, labelInfo
 
 # img = cv.imread('./testing/pics and texts/iotbinarized.jpg', 0)
 # labels, labelsInfo, textNonText, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(img)
@@ -159,6 +162,6 @@ def main(labels, labelInfo, labelNum):
 # cv.imshow('Words', testing.imshow_components(wordLabels))
 # cv.imshow('Phrases', testing.imshow_components(phraseLabels))
 # cv.imshow('Non Texts', testing.imshow_components(nonTextLabels))
-
-cv.waitKey()
-cv.destroyAllWindows()
+#
+# cv.waitKey()
+# cv.destroyAllWindows()

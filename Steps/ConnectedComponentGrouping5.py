@@ -68,7 +68,7 @@ def FilterPhrasesFromSortedWords(deleteWordsHeadTail, phrasesHeadTail):
 
 def GetLabelsInfo(labels, numLabels=None):
     # numLabels contains the number of labels including the background label 0
-    lastIndLabel = np.max(labels) if numLabels==None else numLabels-1
+    lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
     # Holds the information for each connected component: 4 points of rectangle (left right top bottom),
     # 2 for each of the x-coord for both the top and bottom seeds for the label,
     # 1 for num of black pixels in rect, 1 for width, 1 for height, 1 for num of pixels in rect
