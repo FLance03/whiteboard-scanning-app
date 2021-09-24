@@ -5,13 +5,21 @@ from docx import Document
 from docx.shared import Inches
 
 f = open('test.txt', 'r')
-textlines = f.readlines()
+textlines = f.read()
 
 document = Document()
 
-document.add_picture('images/test.png', width=Inches(1.25))
+table = document.add_table(rows=3, cols=3, style='Table Grid')
 
-for line in textlines:
-    document.add_paragraph(line)
+rowCellsA = table.rows[0].cells
+rowCellsB = table.rows[2].cells
+rowCellsA[0].text = textlines
+cell = rowCellsA[2]
+paragraph = cell.add_paragraph()
+cell_r = paragraph.add_run()
+cell_r.add_picture('images/test.png')
+cellA = table.cell(2,0)
+cellB = table.cell(2,2)
+MergeCell = cellA.merge(cellB)
 
 document.save('test.docx')
