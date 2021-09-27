@@ -57,3 +57,44 @@ def PlotIt(img):
     plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
     plt.title('Image')
     plt.show()
+
+# def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison):
+#     t = currentCCFeatures['info'][2] if currentCCFeatures['info'][2] > pastCCFeatures['info'][2] else \
+#     pastCCFeatures['info'][2]
+#     b = currentCCFeatures['info'][3] if currentCCFeatures['info'][3] < pastCCFeatures['info'][3] else \
+#     pastCCFeatures['info'][3]
+#     l = currentCCFeatures['info'][0] if currentCCFeatures['info'][0] > pastCCFeatures['info'][0] else \
+#     pastCCFeatures['info'][0]
+#     r = currentCCFeatures['info'][1] if currentCCFeatures['info'][1] > pastCCFeatures['info'][2] else \
+#     pastCCFeatures['info'][1]
+#     cv.imshow('current', imshow_components(
+#         currentCCFeatures['img'][t - currentCCFeatures['info'][2]:b - currentCCFeatures['info'][2] + 1,
+#         comparison['currentLeft']:comparison['currentRight'] + 1]))
+#     cv.imshow('past', imshow_components(
+#         pastCCFeatures['img'][t - pastCCFeatures['info'][2]:b - pastCCFeatures['info'][2] + 1,
+#         comparison['pastLeft']:comparison['pastRight'] + 1]))
+#     PlotIt(imshow_components(pastCCFeatures['img']))
+#     cv.waitKey()
+#     cv.destroyAllWindows()
+
+def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison):
+    cv.imshow('current', imshow_components(
+        currentCCFeatures['img'][comparison['currentTop']:
+                                 comparison['currentTop'] + currentCCFeatures['info'][8],
+                                    comparison['currentLeft']:
+                                    comparison['currentRight']]))
+    cv.imshow('past', imshow_components(
+        pastCCFeatures['img'][comparison['pastTop']:
+                              comparison['pastTop'] + pastCCFeatures['info'][8],
+                                comparison['pastLeft']:
+                                comparison['pastRight']]))
+    PlotIt(imshow_components(pastCCFeatures['img']))
+    cv.waitKey()
+    cv.destroyAllWindows()
+
+
+def ShowCurrentPast(currentCCFeatures, pastCCFeatures):
+    cv.imshow('current image', imshow_components(currentCCFeatures['img']))
+    cv.imshow('past image', imshow_components(pastCCFeatures['img']))
+    cv.waitKey()
+    cv.destroyAllWindows()

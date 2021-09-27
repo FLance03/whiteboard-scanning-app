@@ -66,6 +66,26 @@ def FilterPhrasesFromSortedWords(deleteWordsHeadTail, phrasesHeadTail):
     return filterPhrasesHeadTail
 
 
+def GetLabelsInfo2(labels, numLabels=None):
+    # numLabels contains the number of labels including the background label 0
+    lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
+    retVal = np.zeros((lastIndLabel, 10), dtype=np.uint32)
+    for labelNum in range(1, lastIndLabel + 1):
+        ver, hor = np.where(labels == labelNum)
+        minVer, minHor = np.min(ver), np.min(hor)
+        maxVer, maxHor = np.max(ver), np.max(hor)
+        topSeed = np.min(np.where(labels[minVer, :] == labelNum))
+        bottomSeed = np.min(np.where(labels[maxVer, :] == labelNum))
+        blackCount = ver.size
+        height = maxVer - minVer + 1
+        width = maxHor - minHor + 1
+        area = width * height
+        retVal[labelNum - 1] = [minHor, maxHor, minVer, maxVer, topSeed, bottomSeed, blackCount, width, height, area]
+
+    # assert np.all(retVal == GetLabelsInfo(labels, numLabels)), labels[0:]
+    return retVal
+
+
 def GetLabelsInfo(labels, numLabels=None):
     # numLabels contains the number of labels including the background label 0
     lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
@@ -83,7 +103,7 @@ def GetLabelsInfo(labels, numLabels=None):
                     labelTrigger[labelNum - 1] = 1
                     # index: 0 is left of rect, 2 is top of rect, 4 is the x-coord of top seed
                     # Numpy [[labelNum-1],[0,2,4]] => [[labelNum-1,labelNum-1,labelNum-1],[0,2,4]] => [labelNum-1,0],[labelNum-1,2],[labelNum-1,4]
-                    labelsInfo[[labelNum - 1], [0, 2, 4]] = colInd, rowInd, colInd
+                    labelsInfo[[labelNum - 1], [0, 2, 4, 5]] = colInd, rowInd, colInd, colInd
                 elif colInd < labelsInfo[labelNum - 1][0]:
                     # Only the left of the rectangle may be updated since the loop strictly goes top to bottom unlike on the horizontal
                     # side which may go back to the left. Thus, the top of the rectangle doesnt change and the there cannot
@@ -293,6 +313,7 @@ def main(img):
     textLabelCount = 0
     wordLabelCount = 0
     phraseLabelCount = 0
+    mimicColoredLabels = coloredLabels.copy()
     for count in range(2):
         runningThreshold = 20
         while runningThreshold > 2:
@@ -420,6 +441,9 @@ def main(img):
                             wordLabels[nonzeroY+top, nonzeroX+left] = wordLabelCount
                             # And label the determined text ones with a faster counter
                             textLabels[nonzeroY+top, nonzeroX+left] = textLabelCount
+                            mimicColoredLabels[nonzeroY+top, nonzeroX+left] = 0
+                            cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 5, (0, 255, 0), -1)
+                            cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 3, (0, 0, 255), -1)
                             # Same index in inPointsCenters and inPointsInfo relates to the same connected components
                             # Record the said index in deleteOutInd to keep track of which elements in outPoints are to be deleted
                             deleteOutInd.append(head + ind)

@@ -67,7 +67,7 @@ cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/redundancyright.jpg')
+img = cv.imread('images/redundancyfront.jpg')
 width = 5000
 absWidth = 10000
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -182,6 +182,6 @@ while True:
     cv.imshow("sobelx", resize(abs_grad_x))
     cv.imshow("canny", resize(canny))
     cv.imshow("warped", resize(warped))
-
+    cv.imwrite('step1redundancyfront.jpg',resize(warped))
     if cv.waitKey(0) & 0xFF == ord('q'):
         break
