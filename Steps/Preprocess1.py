@@ -115,6 +115,7 @@ while True:
             (pt1, pt2) = findLinePoints(pt1, pt2, res.shape[1])
 
             # Choosing the top line and bottom line
+            # Instead of comparing y[0], compare middle point y of the line??
             if pt1[1] < halfline and halfline - pt1[1] < halfline - topline[0][1]:
                 topline = (pt1, pt2)
             elif pt1[1] > halfline and pt1[1] - halfline < botline[0][1] - halfline:
