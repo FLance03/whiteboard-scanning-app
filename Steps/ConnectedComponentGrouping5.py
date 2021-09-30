@@ -1,10 +1,12 @@
 from collections import deque
+from time import time
 
 import numpy as np
 import cv2 as cv
 
 from testing import testing
 
+start = time()
 def ContourWithThree(field, copy=True):
     # Returns the field with a label of 3 around the label 1
     if copy:
@@ -66,65 +68,66 @@ def FilterPhrasesFromSortedWords(deleteWordsHeadTail, phrasesHeadTail):
     return filterPhrasesHeadTail
 
 
-def GetLabelsInfo2(labels, numLabels=None):
+def GetLabelsInfo(labels, numLabels=None):
     # numLabels contains the number of labels including the background label 0
     lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
     retVal = np.zeros((lastIndLabel, 10), dtype=np.uint32)
     for labelNum in range(1, lastIndLabel + 1):
         ver, hor = np.where(labels == labelNum)
-        minVer, minHor = np.min(ver), np.min(hor)
-        maxVer, maxHor = np.max(ver), np.max(hor)
-        topSeed = np.min(np.where(labels[minVer, :] == labelNum))
-        bottomSeed = np.min(np.where(labels[maxVer, :] == labelNum))
-        blackCount = ver.size
-        height = maxVer - minVer + 1
-        width = maxHor - minHor + 1
-        area = width * height
-        retVal[labelNum - 1] = [minHor, maxHor, minVer, maxVer, topSeed, bottomSeed, blackCount, width, height, area]
+        if ver.size > 0 and hor.size > 0:
+            minVer, minHor = np.min(ver), np.min(hor)
+            maxVer, maxHor = np.max(ver), np.max(hor)
+            topSeed = np.min(np.where(labels[minVer, :] == labelNum))
+            bottomSeed = np.min(np.where(labels[maxVer, :] == labelNum))
+            blackCount = ver.size
+            height = maxVer - minVer + 1
+            width = maxHor - minHor + 1
+            area = width * height
+            retVal[labelNum - 1] = [minHor, maxHor, minVer, maxVer, topSeed, bottomSeed, blackCount, width, height, area]
 
     # assert np.all(retVal == GetLabelsInfo(labels, numLabels)), labels[0:]
     return retVal
 
 
-def GetLabelsInfo(labels, numLabels=None):
-    # numLabels contains the number of labels including the background label 0
-    lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
-    # Holds the information for each connected component: 4 points of rectangle (left right top bottom),
-    # 2 for each of the x-coord for both the top and bottom seeds for the label,
-    # 1 for num of black pixels in rect, 1 for width, 1 for height, 1 for num of pixels in rect
-    labelsInfo = np.zeros((lastIndLabel, 10), np.uint32)
-    # To check whether an info for a particular label has been updated (since they all start zero which supposedly
-    # precedes over all possible starting coordinates of a rectangle
-    labelTrigger = np.zeros(lastIndLabel, np.uint8)
-    for rowInd, rowVal in enumerate(labels):
-        for colInd, labelNum in enumerate(rowVal):
-            if labelNum != 0:
-                if not labelTrigger[labelNum - 1]:
-                    labelTrigger[labelNum - 1] = 1
-                    # index: 0 is left of rect, 2 is top of rect, 4 is the x-coord of top seed
-                    # Numpy [[labelNum-1],[0,2,4]] => [[labelNum-1,labelNum-1,labelNum-1],[0,2,4]] => [labelNum-1,0],[labelNum-1,2],[labelNum-1,4]
-                    labelsInfo[[labelNum - 1], [0, 2, 4, 5]] = colInd, rowInd, colInd, colInd
-                elif colInd < labelsInfo[labelNum - 1][0]:
-                    # Only the left of the rectangle may be updated since the loop strictly goes top to bottom unlike on the horizontal
-                    # side which may go back to the left. Thus, the top of the rectangle doesnt change and the there cannot
-                    # be a "more top" (greater/higher y-coord) top seed, solidifying the x-coord info kept
-                    labelsInfo[labelNum - 1][0] = colInd
-                if colInd > labelsInfo[labelNum - 1][1]:
-                    # Update right of rect
-                    labelsInfo[labelNum - 1][1] = colInd
-                if rowInd > labelsInfo[labelNum - 1][3]:
-                    # Update bottom of rect and x-coord of the bottom seed
-                    labelsInfo[labelNum - 1][3] = rowInd
-                    labelsInfo[labelNum - 1][5] = colInd
-                # Increment counter for black pixels for a label
-                labelsInfo[labelNum - 1][6] += 1
-    # Width = right - left + 1
-    labelsInfo[:, 7] = labelsInfo[:, 1] - labelsInfo[:, 0] + 1
-    # Height = bottom - top + 1
-    labelsInfo[:, 8] = labelsInfo[:, 3] - labelsInfo[:, 2] + 1
-    # Num of Pixels (Area of Rect) = width * height
-    labelsInfo[:, 9] = labelsInfo[:, 7] * labelsInfo[:, 8]
-    return labelsInfo
+# def GetLabelsInfo(labels, numLabels=None):
+#     # numLabels contains the number of labels including the background label 0
+#     lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
+#     # Holds the information for each connected component: 4 points of rectangle (left right top bottom),
+#     # 2 for each of the x-coord for both the top and bottom seeds for the label,
+#     # 1 for num of black pixels in rect, 1 for width, 1 for height, 1 for num of pixels in rect
+#     labelsInfo = np.zeros((lastIndLabel, 10), np.uint32)
+#     # To check whether an info for a particular label has been updated (since they all start zero which supposedly
+#     # precedes over all possible starting coordinates of a rectangle
+#     labelTrigger = np.zeros(lastIndLabel, np.uint8)
+#     for rowInd, rowVal in enumerate(labels):
+#         for colInd, labelNum in enumerate(rowVal):
+#             if labelNum != 0:
+#                 if not labelTrigger[labelNum - 1]:
+#                     labelTrigger[labelNum - 1] = 1
+#                     # index: 0 is left of rect, 2 is top of rect, 4 is the x-coord of top seed
+#                     # Numpy [[labelNum-1],[0,2,4]] => [[labelNum-1,labelNum-1,labelNum-1],[0,2,4]] => [labelNum-1,0],[labelNum-1,2],[labelNum-1,4]
+#                     labelsInfo[[labelNum - 1], [0, 2, 4, 5]] = colInd, rowInd, colInd, colInd
+#                 elif colInd < labelsInfo[labelNum - 1][0]:
+#                     # Only the left of the rectangle may be updated since the loop strictly goes top to bottom unlike on the horizontal
+#                     # side which may go back to the left. Thus, the top of the rectangle doesnt change and the there cannot
+#                     # be a "more top" (greater/higher y-coord) top seed, solidifying the x-coord info kept
+#                     labelsInfo[labelNum - 1][0] = colInd
+#                 if colInd > labelsInfo[labelNum - 1][1]:
+#                     # Update right of rect
+#                     labelsInfo[labelNum - 1][1] = colInd
+#                 if rowInd > labelsInfo[labelNum - 1][3]:
+#                     # Update bottom of rect and x-coord of the bottom seed
+#                     labelsInfo[labelNum - 1][3] = rowInd
+#                     labelsInfo[labelNum - 1][5] = colInd
+#                 # Increment counter for black pixels for a label
+#                 labelsInfo[labelNum - 1][6] += 1
+#     # Width = right - left + 1
+#     labelsInfo[:, 7] = labelsInfo[:, 1] - labelsInfo[:, 0] + 1
+#     # Height = bottom - top + 1
+#     labelsInfo[:, 8] = labelsInfo[:, 3] - labelsInfo[:, 2] + 1
+#     # Num of Pixels (Area of Rect) = width * height
+#     labelsInfo[:, 9] = labelsInfo[:, 7] * labelsInfo[:, 8]
+#     return labelsInfo
 
 
 def PreFilter(labels, numLabels=None, copy=True):
@@ -273,6 +276,57 @@ def FilterHeadTail(wordsHeadTail, phrasesHeadTail):
     filterPhrasesHeadTail = FilterPhrasesFromSortedWords(deleteWordsHeadTail, filterPhrasesHeadTail)
     return filterWordsHeadTail, filterPhrasesHeadTail
 
+
+def PropagateNonTextLabels(textLabels, nonTextLabels):
+    retTextLabels = textLabels.copy()
+    retNonTextLabels = nonTextLabels.copy()
+    field = np.zeros_like(nonTextLabels, dtype=np.uint8)
+    textInfo = GetLabelsInfo(textLabels)
+    nonTextInfo = GetLabelsInfo(nonTextLabels)
+    # Concatenate label number information before sorting
+    nonTextInfo = np.concatenate((nonTextInfo, np.arange(1, len(nonTextInfo)+1).reshape(-1, 1)), axis=1)
+    # Sort in ascending order by area
+    sortInd = np.argsort(nonTextInfo[:, 9])
+    nonTextInfo = nonTextInfo[sortInd]
+    aveHeight = np.average(textInfo[:, 8])
+    aveWidth = np.average(textInfo[:, 7])
+    thresh = (min(aveHeight, aveWidth) // 2).astype(np.uint8)
+    kernel = np.ones((thresh * 2 + 1, thresh * 2 + 1), dtype=np.uint8)
+    for labelNum in nonTextInfo[:, 10]:
+        nonTextLabel = np.where(nonTextLabels == labelNum, 1, 0)
+        nonTextLabel = cv.dilate(nonTextLabel.astype(np.uint8), kernel)
+        field = np.where(nonTextLabel==1, labelNum, field)
+    textIndsWithLabel = textLabels != 0
+    nonTextIndsWithLabel = field != 0
+    willRemoveLabels = np.logical_and(textIndsWithLabel, nonTextIndsWithLabel).nonzero()
+    removeLabels = textLabels[willRemoveLabels]
+    newLabels = field[willRemoveLabels]
+    priorities = [0] * len(removeLabels)
+    sortedInfo = list(nonTextInfo[:, 10])
+    for i in range(len(priorities)):
+        priorities[i] = sortedInfo.index(newLabels[i])
+    uniquePriorities = sorted(np.unique(priorities), reverse=True)
+    for priority in uniquePriorities:
+        for i in range(len(priorities)):
+            if priorities[i] == priority:
+                retNonTextLabels[retTextLabels == removeLabels[i]] = newLabels[i]
+                retTextLabels[retTextLabels == removeLabels[i]] = 0
+    return retTextLabels, retNonTextLabels
+
+
+def Recollapse(labels):
+    retLabels = np.zeros_like(labels)
+    maxLabel = np.max(labels)
+    possibleLabelNums = list(np.unique(labels))
+    newLabel = 1
+    labelsHash = np.zeros((maxLabel + 1), dtype=np.uint16)
+    for labelNum in possibleLabelNums:
+        if labelNum != 0:
+            labelsHash[labelNum] = newLabel
+            newLabel += 1
+    labelInds = labels.nonzero()
+    retLabels[labelInds] = labelsHash[labels[labelInds]]
+    return retLabels
 
 def main(img):
     img = cv.threshold(img, 0, 255, cv.THRESH_OTSU)[1]
@@ -466,8 +520,6 @@ def main(img):
                 if len(deleteOutInd) == 0:
                     # Nothing was deleted for the entire loop so reduce the runningThreshold the next iteration to progress
                     runningThreshold -= 1
-    # textNonTextLocations is 1 if text, 2 if non-text, else 0
-    textNonTextLocations = np.zeros_like(labels, dtype=np.uint8)
     for rowInd in range(len(labels)):
         for colInd, label in enumerate(labels[rowInd]):
             if label != 0:
@@ -475,20 +527,27 @@ def main(img):
                     # If the pixel is not labelled as a word but was originally labelled (after filter)
                         # then include that as a label in nonTextLabels
                     nonTextLabels[rowInd][colInd] = 255
-                    textNonTextLocations[rowInd][colInd] = 2
-                else:
-                    textNonTextLocations[rowInd][colInd] = 1
     nonTextLabels = cv.connectedComponents(nonTextLabels, connectivity=8)[1]
-    return labels, labelsInfo, textNonTextLocations, textLabels, wordLabels, phraseLabels, nonTextLabels
 
-# # for left, right, top, bottom, *other in filterInfo[inPointInds2]:
-# #     cv.rectangle(coloredLabels, (left, top), (right, bottom), (255, 255, 255), 1)
-# cv.imshow('Deleted Parts', testing.ResizeWithAspectRatio(mimicColoredLabels, width=455))
-# cv.imshow('Words', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=455))
-# # cv.imshow('Left', img)
-# cv.imshow('Original', testing.ResizeWithAspectRatio(coloredLabels, width=455))
-# # testing.PlotIt(coloredLabels)
-#
-# cv.waitKey()
-# cv.destroyAllWindows()
+    for i in range(3):
+        textLabels, nonTextLabels = PropagateNonTextLabels(textLabels, nonTextLabels)
+    wordLabels[textLabels == 0] = 0
+    phraseLabels[textLabels == 0] = 0
+    textLabels = Recollapse(textLabels)
+    nonTextLabels = Recollapse(nonTextLabels)
+    wordLabels = Recollapse(wordLabels)
+    phraseLabels = Recollapse(phraseLabels)
+    print(time() - start)
+    return labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
+
+labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels  = main(cv.imread('testing/pics and texts/iotbinarized.jpg', 0))
+
+
+cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
+cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
+cv.imshow('Step 5: Words', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=450))
+cv.imshow('Step 5: Phrases', testing.ResizeWithAspectRatio(testing.imshow_components(phraseLabels), width=450))
+
+cv.waitKey()
+cv.destroyAllWindows()
 

@@ -17,7 +17,7 @@ _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
 cv.imshow('Step 3: Binarization', bw)
 cv.waitKey()
 # # Remove the possible lines from the blackboard edges
-labels, labelsInfo, textNonText, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(bw)
+labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(bw)
 cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=455))
 cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=455))
 cv.waitKey()

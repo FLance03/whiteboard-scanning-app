@@ -24,7 +24,7 @@ for ind, testImage in enumerate(testImages):
     anded.append(np.where(bw == 0, 1, 0))
     # cv.imshow(str(ind + 1), bw)
     # Remove the possible lines from the blackboard edges
-    labels, labelsInfo, textNonText, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(bw)
+    labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(bw)
 
     # np.savez(testImage + '.npz', labels=labels, labelsInfo=labelsInfo, textNonText=textNonText, textLabels=textLabels,
     #          wordLabels=wordLabels, phraseLabels=phraseLabels, nonTextLabels=nonTextLabels)

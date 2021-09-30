@@ -52,10 +52,12 @@ def imshow_components(labels):
     labeled_img[label_hue==0] = 0
 
     return labeled_img
-def PlotIt(img):
+def PlotIt(img, title=None):
     plt.subplot(1, 1, 1)
     plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
     plt.title('Image')
+    if title is not None:
+        plt.suptitle(title)
     plt.show()
 
 # def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison):
@@ -77,7 +79,7 @@ def PlotIt(img):
 #     cv.waitKey()
 #     cv.destroyAllWindows()
 
-def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison):
+def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison, plotIt=False):
     cv.imshow('current', imshow_components(
         currentCCFeatures['img'][comparison['currentTop']:
                                  comparison['currentTop'] + currentCCFeatures['info'][8],
@@ -88,7 +90,9 @@ def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison):
                               comparison['pastTop'] + pastCCFeatures['info'][8],
                                 comparison['pastLeft']:
                                 comparison['pastRight']]))
-    PlotIt(imshow_components(pastCCFeatures['img']))
+    if plotIt:
+        PlotIt(imshow_components(pastCCFeatures['img']), title='Past')
+        PlotIt(imshow_components(currentCCFeatures['img']), title='Current')
     cv.waitKey()
     cv.destroyAllWindows()
 
