@@ -12,7 +12,8 @@ topLpt = (0, 480)
 topRpt = (2985, 1115)
 botLpt = (0, 5055)
 botRpt = (2985, 4167)
-imagename = "step1redundancyfront"
+imageNameInput = "redundancyleft"
+imageNameOutput = "step1redundancyfront"
 
 def empty():
     pass
@@ -28,8 +29,8 @@ def initRect():
     rect = np.zeros((4,2), dtype="float32")
     rect[0] = topLpt
     rect[1] = topRpt
-    rect[2] = botLpt
-    rect[3] = botRpt
+    rect[2] = botRpt
+    rect[3] = botLpt
 
     return rect
 
@@ -58,32 +59,32 @@ def findLinePoints(p1, p2, width):
 
     return ((x1, y1), (x2, y2))
 
-cv.namedWindow("Houghlines")
-cv.resizeWindow("Houghlines", 900, 350)
-# Threshold value here, change 800 to something else
-cv.createTrackbar("threshold", "Houghlines", 800, 10000, empty)
-cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
-cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
-cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
+# cv.namedWindow("Houghlines")
+# cv.resizeWindow("Houghlines", 900, 350)
+# # Threshold value here, change 800 to something else
+# cv.createTrackbar("threshold", "Houghlines", 800, 10000, empty)
+# cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
+# cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
+# cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/redundancyleft.jpg')
+img = cv.imread('images/'+imageNameInput+'.jpg')
 width = 5000
 absWidth = 10000
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-blur = cv.GaussianBlur(gray, (5,5), 0) 
+# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# blur = cv.GaussianBlur(gray, (5,5), 0) 
 
-# Create structuring elements
-horizontal_size = 100
-horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontal_size, 1))
+# # Create structuring elements
+# horizontal_size = 100
+# horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontal_size, 1))
 
-# apply close to connect the white areas
-morph = cv.morphologyEx(blur, cv.MORPH_OPEN, horizontalStructure)
-morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, horizontalStructure)
+# # apply close to connect the white areas
+# morph = cv.morphologyEx(blur, cv.MORPH_OPEN, horizontalStructure)
+# morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, horizontalStructure)
 
-# Sobel edge detection with Hough Transform
-sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
-abs_grad_x = cv.convertScaleAbs(sobelx)
-canny = cv.Canny(morph, cv.CV_64F, 75, 0)
+# # Sobel edge detection with Hough Transform
+# sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
+# abs_grad_x = cv.convertScaleAbs(sobelx)
+# canny = cv.Canny(morph, cv.CV_64F, 75, 0)
 
 while True:
     res = img.copy()
@@ -139,9 +140,7 @@ while True:
     # Display
     cv.imshow("res", resize(res))
     # cv.imshow("morph", resize(morph))
-    cv.imshow("sobelx", resize(abs_grad_x))
-    cv.imshow("canny", resize(canny))
     cv.imshow("warped", resize(warped))
-    cv.imwrite(imagename+'.jpg',resize(warped))
+    cv.imwrite(imageNameOutput+'.jpg',resize(warped))
     if cv.waitKey(0) & 0xFF == ord('q'):
         break

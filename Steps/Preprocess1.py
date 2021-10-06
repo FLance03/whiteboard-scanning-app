@@ -16,7 +16,8 @@ import math
 # - Modify perspective transform so that it works with values outside the width and height of an image (Because houghline equation gives values outside image height and wwidth)
 # - Try to make a buffer in the middle line
 
-imagename = "step1redundancyfront"
+imageNameInput = "redundancyleft"
+imageNameOutput = "step1redundancyfront"
 
 def empty():
     pass
@@ -70,7 +71,7 @@ cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/redundancyleft.jpg')
+img = cv.imread('images/'+imageNameInput+'.jpg')
 width = 5000
 absWidth = 10000
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -186,6 +187,6 @@ while True:
     cv.imshow("sobelx", resize(abs_grad_x))
     cv.imshow("canny", resize(canny))
     cv.imshow("warped", resize(warped))
-    cv.imwrite(imagename+'.jpg',resize(warped))
+    cv.imwrite(imageNameOutput+'.jpg',resize(warped))
     if cv.waitKey(0) & 0xFF == ord('q'):
         break
