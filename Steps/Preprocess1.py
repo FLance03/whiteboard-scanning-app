@@ -14,6 +14,9 @@ import math
 # Possible work arounds:
 # - is to find a specific value for the hough lines equation instead of 1000 or 10000. 
 # - Modify perspective transform so that it works with values outside the width and height of an image (Because houghline equation gives values outside image height and wwidth)
+# - Try to make a buffer in the middle line
+
+imagename = "step1redundancyfront"
 
 def empty():
     pass
@@ -62,12 +65,12 @@ def findLinePoints(p1, p2, width):
 cv.namedWindow("Houghlines")
 cv.resizeWindow("Houghlines", 900, 350)
 # Threshold value here, change 800 to something else
-cv.createTrackbar("threshold", "Houghlines", 800, 1000, empty)
+cv.createTrackbar("threshold", "Houghlines", 800, 10000, empty)
 cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/redundancyfront.jpg')
+img = cv.imread('images/redundancyleft.jpg')
 width = 5000
 absWidth = 10000
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -183,6 +186,6 @@ while True:
     cv.imshow("sobelx", resize(abs_grad_x))
     cv.imshow("canny", resize(canny))
     cv.imshow("warped", resize(warped))
-    cv.imwrite('step1redundancyfront.jpg',resize(warped))
+    cv.imwrite(imagename+'.jpg',resize(warped))
     if cv.waitKey(0) & 0xFF == ord('q'):
         break
