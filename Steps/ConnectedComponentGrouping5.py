@@ -540,14 +540,14 @@ def main(img):
     print(time() - start)
     return labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
 
-labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels  = main(cv.imread('testing/pics and texts/iotbinarized.jpg', 0))
+# labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels  = main(cv.imread('testing/pics and texts/iotbinarized.jpg', 0))
 
 
-cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
-cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
-cv.imshow('Step 5: Words', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=450))
-cv.imshow('Step 5: Phrases', testing.ResizeWithAspectRatio(testing.imshow_components(phraseLabels), width=450))
-
-cv.waitKey()
-cv.destroyAllWindows()
+# cv.imshow('Step 5: Texts', testing.imshow_components(textLabels))
+# cv.imshow('Step 5: Non-Texts', testing.imshow_components(nonTextLabels))
+# cv.imshow('Step 5: Words', testing.imshow_components(wordLabels))
+# cv.imshow('Step 5: Phrases', testing.ResizeWithAspectRatio(testing.imshow_components(phraseLabels), width=450))
+#
+# cv.waitKey()
+# cv.destroyAllWindows()
 
