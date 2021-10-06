@@ -1,57 +1,10 @@
-from pprint import pprint as p
-
-import cv2 as cv
 import numpy as np
+import cv2 as cv
 from matplotlib import pyplot as plt
 
-dir = 'testing/pics and texts/'
+import SaturationAndOutlier2 as Step2
 
-def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
-    dim = None
-    (h, w) = image.shape[:2]
 
-    if width is None and height is None:
-        return image
-    if width is None:
-        r = height / float(h)
-        dim = (int(w * r), height)
-    else:
-        r = width / float(w)
-        dim = (width, int(h * r))
-
-    return cv.resize(image, dim, interpolation=inter)
-
-def WriteFile(someObject, pretty=False):
-    with open(dir + 'print2.txt', 'w') as out:
-        print(someObject, file=out) if not pretty else p(someObject, stream=out)
-
-def FullPrint(*args, **kwargs):
-  opt = np.get_printoptions()
-  np.set_printoptions(threshold=np.inf)
-  with open(dir + 'print.txt', 'w') as out:
-    print(*args, **kwargs, file=out)
-  np.set_printoptions(**opt)
-
-def FullPrint2(filename, *args, **kwargs):
-  opt = np.get_printoptions()
-  np.set_printoptions(threshold=np.inf)
-  with open(dir + filename + '.txt', 'w') as out:
-    print(*args, **kwargs, file=out)
-  np.set_printoptions(**opt)
-
-def imshow_components(labels):
-    # Map component labels to hue val
-    label_hue = np.uint8(179*labels/np.max(labels))
-    blank_ch = 255*np.ones_like(label_hue)
-    labeled_img = cv.merge([label_hue, blank_ch, blank_ch])
-
-    # cvt to BGR for display
-    labeled_img = cv.cvtColor(labeled_img, cv.COLOR_HSV2BGR)
-
-    # set bg label to black
-    labeled_img[label_hue==0] = 0
-
-    return labeled_img
 def PlotIt(img, title=None):
     plt.subplot(1, 1, 1)
     plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
@@ -60,45 +13,33 @@ def PlotIt(img, title=None):
         plt.suptitle(title)
     plt.show()
 
-# def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison):
-#     t = currentCCFeatures['info'][2] if currentCCFeatures['info'][2] > pastCCFeatures['info'][2] else \
-#     pastCCFeatures['info'][2]
-#     b = currentCCFeatures['info'][3] if currentCCFeatures['info'][3] < pastCCFeatures['info'][3] else \
-#     pastCCFeatures['info'][3]
-#     l = currentCCFeatures['info'][0] if currentCCFeatures['info'][0] > pastCCFeatures['info'][0] else \
-#     pastCCFeatures['info'][0]
-#     r = currentCCFeatures['info'][1] if currentCCFeatures['info'][1] > pastCCFeatures['info'][2] else \
-#     pastCCFeatures['info'][1]
-#     cv.imshow('current', imshow_components(
-#         currentCCFeatures['img'][t - currentCCFeatures['info'][2]:b - currentCCFeatures['info'][2] + 1,
-#         comparison['currentLeft']:comparison['currentRight'] + 1]))
-#     cv.imshow('past', imshow_components(
-#         pastCCFeatures['img'][t - pastCCFeatures['info'][2]:b - pastCCFeatures['info'][2] + 1,
-#         comparison['pastLeft']:comparison['pastRight'] + 1]))
-#     PlotIt(imshow_components(pastCCFeatures['img']))
-#     cv.waitKey()
-#     cv.destroyAllWindows()
+def GetLabelsInfo(labels, numLabels=None):
+    # numLabels contains the number of labels including the background label 0
+    lastIndLabel = np.max(labels) if numLabels is None else numLabels - 1
+    retVal = np.zeros((lastIndLabel, 10), dtype=np.uint32)
+    for labelNum in range(1, lastIndLabel + 1):
+        ver, hor = np.where(labels == labelNum)
+        if ver.size > 0 and hor.size > 0:
+            minVer, minHor = np.min(ver), np.min(hor)
+            maxVer, maxHor = np.max(ver), np.max(hor)
+            topSeed = np.min(np.where(labels[minVer, :] == labelNum))
+            bottomSeed = np.min(np.where(labels[maxVer, :] == labelNum))
+            blackCount = ver.size
+            height = maxVer - minVer + 1
+            width = maxHor - minHor + 1
+            area = width * height
+            retVal[labelNum - 1] = [minHor, maxHor, minVer, maxVer, topSeed, bottomSeed, blackCount, width, height, area]
+    return retVal
 
-def ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, comparison, plotIt=False):
-    cv.imshow('current', imshow_components(
-        currentCCFeatures['img'][comparison['currentTop']:
-                                 comparison['currentTop'] + currentCCFeatures['info'][8],
-                                    comparison['currentLeft']:
-                                    comparison['currentRight']]))
-    cv.imshow('past', imshow_components(
-        pastCCFeatures['img'][comparison['pastTop']:
-                              comparison['pastTop'] + pastCCFeatures['info'][8],
-                                comparison['pastLeft']:
-                                comparison['pastRight']]))
-    if plotIt:
-        PlotIt(imshow_components(pastCCFeatures['img']), title='Past')
-        PlotIt(imshow_components(currentCCFeatures['img']), title='Current')
-    cv.waitKey()
-    cv.destroyAllWindows()
+def cropOutEdges(img):
+    assert img is not None, "Image does not exist"
+    img = Step2.main(img)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    _, binarized = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
+    binarized = np.where(binarized == 255, 0, 1)
+    left, right, top, bottom = GetLabelsInfo(binarized)[0, :4]
+    binarized = np.where(binarized == 0, 255, 0)
+    return binarized[top:bottom+1, left:right+1].astype(np.uint8)
 
+# PlotIt(cropOutEdges(cv.imread('test.jpg')))
 
-def ShowCurrentPast(currentCCFeatures, pastCCFeatures):
-    cv.imshow('current image', imshow_components(currentCCFeatures['img']))
-    cv.imshow('past image', imshow_components(pastCCFeatures['img']))
-    cv.waitKey()
-    cv.destroyAllWindows()
