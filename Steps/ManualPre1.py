@@ -12,12 +12,9 @@ topLpt = (0, 480)
 topRpt = (2985, 1115)
 botLpt = (0, 5055)
 botRpt = (2985, 4167)
-<<<<<<< HEAD
-imagename = "step1redundancyfront"
-=======
+
 imageNameInput = "redundancyleft"
 imageNameOutput = "step1redundancyfront"
->>>>>>> b9f455bcdebc9467c61bf9102e7274d211648f29
 
 def empty():
     pass
