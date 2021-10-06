@@ -11,10 +11,10 @@ from testing import testing
 
 startTime = time()
 
-testImages = ['step1redundancyfront', 'step1redundancyright', 'step1redundancyleftleft']
+testImages = ['1f', '2f', '3f']
 anded = []
 for ind, testImage in enumerate(testImages):
-    img = cv.imread('./testing/pics and texts/' + testImage + '.jpg')
+    img = cv.imread('./testing/pics and texts/1/' + testImage + '.jpg')
     img = Step2.main(img)
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -22,18 +22,19 @@ for ind, testImage in enumerate(testImages):
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
     bw = bw[15:-15]
     anded.append(np.where(bw == 0, 1, 0))
-    # cv.imshow(str(ind + 1), bw)
+    cv.imshow(str(ind + 1), bw)
+    cv.waitKey()
     # Remove the possible lines from the blackboard edges
     labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(bw)
 
     # np.savez(testImage + '.npz', labels=labels, labelsInfo=labelsInfo, textNonText=textNonText, textLabels=textLabels,
     #          wordLabels=wordLabels, phraseLabels=phraseLabels, nonTextLabels=nonTextLabels)
 print(time() - startTime)
-cv.imshow('first second', np.where(np.bitwise_and(anded[0], anded[1]) == 1, 0, 255).astype(np.uint8))
-cv.imshow('first third', np.where(np.bitwise_and(anded[0], anded[2]) == 1, 0, 255).astype(np.uint8))
-cv.imshow('second third', np.where(np.bitwise_and(anded[1], anded[2]) == 1, 0, 255).astype(np.uint8))
-cv.waitKey()
-cv.destroyAllWindows()
+# cv.imshow('first second', np.where(np.bitwise_and(anded[0], anded[1]) == 1, 0, 255).astype(np.uint8))
+# cv.imshow('first third', np.where(np.bitwise_and(anded[0], anded[2]) == 1, 0, 255).astype(np.uint8))
+# cv.imshow('second third', np.where(np.bitwise_and(anded[1], anded[2]) == 1, 0, 255).astype(np.uint8))
+# cv.waitKey()
+# cv.destroyAllWindows()
 # imgsFeatures = []
 # # Start loop from the most recent picture
 # for img in testImages[::-1]:
@@ -73,9 +74,9 @@ cv.destroyAllWindows()
 # # features = Step6.main(phraseLabels, phraseLabelsInfo[0], 1)
 # # testing.FullPrint(features)
 
-cv.imshow('Labels', testing.imshow_components(labels))
+# cv.imshow('Labels', testing.imshow_components(labels))
 # cv.imshow('Labels2', testing.imshow_components(np.where(phraseLabels == 1, phraseLabels, 0)))
-cv.imshow('Texts', testing.imshow_components(textLabels))
+# cv.imshow('Texts', testing.imshow_components(textLabels))
 # cv.imshow('Words', testing.imshow_components(wordLabels))
 cv.imshow('Phrases', testing.imshow_components(phraseLabels))
 cv.imshow('Non Texts', testing.imshow_components(nonTextLabels))

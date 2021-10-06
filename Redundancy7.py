@@ -27,6 +27,9 @@ count = 0
 countMerged = [0, 0, 0, 0]
 sumTime = 0
 
+# For testing only
+redundancyColorer = []
+redundancyCounter = 1
 lapTime = time()
 sumTime = sumTime + time() - lapTime
 count += 1
@@ -66,8 +69,7 @@ def TestCompatibilityOfTwoFeatures(first, second):
 def GetWeight(redundancyMatrix):
     imgMatrix = np.where(redundancyMatrix==0, 0, 255)
     numLabels, labels = cv.connectedComponents(imgMatrix.astype(np.uint8), connectivity=8)
-    # labelsInfo = Step5.GetLabelsInfo(labels, numLabels)
-    labelsInfo = Step5.GetLabelsInfo2(labels, numLabels)
+    labelsInfo = Step5.GetLabelsInfo(labels, numLabels)
     assert labelsInfo.ndim == 2
     labelWeights = np.zeros((numLabels), np.uint64)
     # Find total weights for each label
@@ -465,6 +467,7 @@ def TryToMergeFeatures(imgsFeatures, currentImgFeatures, matchedLabels, currentM
 
 
 def RecordRedundancy(redundancyDrawer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
+    global redundancyColorer, redundancyCounter
     # testing.ShowChosenRedundancy2(currentCCFeatures, pastCCFeatures, {
     #     'currentLeft': intersectCurrent[0],
     #     'currentRight': intersectCurrent[1],
@@ -491,6 +494,7 @@ def RecordRedundancy(redundancyDrawer, currentCCFeatures, pastCCFeatures, imgNum
     redundancyVals = redundancyDrawer[imgNumInds, rowInds, colInds]
     labels = redundancyCombs[imgNumInds, np.full((len(imgNumInds)), imgNum)]
     assert labels.size == redundancyVals.size
+    redundancyColorer[imgNumInds, rowInds, colInds] = np.where(redundancyVals!=0, redundancyCounter, 0)
     redundancyDrawer[imgNumInds, rowInds, colInds] = np.where(redundancyVals==255, labels, redundancyVals)
 
     intersectLeft = intersectCurrent[0]
@@ -501,11 +505,17 @@ def RecordRedundancy(redundancyDrawer, currentCCFeatures, pastCCFeatures, imgNum
                                                currentCCFeatures['info'][2] + intersectTop + intersectHeight,
                                                     currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[0]:
                                                     currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[1] + 1]
+    redundancyColorer[imgNum, currentCCFeatures['info'][2] + intersectTop:
+                             currentCCFeatures['info'][2] + intersectTop + intersectHeight,
+                                currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[0]:
+                                currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[1] + 1] = np.where(
+                                        redundancyVals!=0, redundancyCounter, 0)
     redundancyDrawer[imgNum, currentCCFeatures['info'][2] + intersectTop:
                              currentCCFeatures['info'][2] + intersectTop + intersectHeight,
                                 currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[0]:
                                 currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[1] + 1] = np.where(
                                         redundancyVals==255, labels.reshape(*redundancyVals.shape), redundancyVals)
+    redundancyCounter += 1
 
 
 def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
@@ -700,7 +710,7 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
                     deleteInds[boxNum, boxInd] = True
                     assert usedUpCCs[boxNum, boxInd] == False
                     usedUpCCs[boxNum, boxInd] = True
-            info = Step5.GetLabelsInfo2(np.where(newImg!=0, 1, 0))[0]
+            info = Step5.GetLabelsInfo(np.where(newImg!=0, 1, 0))[0]
             # If the edge rows/columns still have blanks, delete those rows/columns
             newImg = newImg[info[2]:info[3]+1, info[0]:info[1]+1]
             newOrigImg = newOrigImg[info[2]:info[3]+1, info[0]:info[1]+1]
@@ -775,6 +785,7 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
 
 
 def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
+    global redundancyColorer, redundancyCounter
     # imgsFeatures is a 3d array (not including the numpy arrays inside)
     redundantCC = []
     pastImgFeatures = []
@@ -786,6 +797,8 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
     pastImgFeatures.append(imgsFeatures[0].copy())
     # For each image...
     for imgNum in range(1, len(imgsFeatures)):
+        redundancyCounter = 1
+        redundancyColorer = np.zeros((imgNum + 1, *redundancyDrawer[0].shape), dtype=np.uint8)
         currentImgFeatures = imgsFeatures[imgNum]
         type2Archives.append([])
         for ind in range(len(currentImgFeatures)):
@@ -839,13 +852,15 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
             # testing.FullPrint2('print1', imgFeatures['img'])
             cv.waitKey()
             cv.destroyAllWindows()
-        print(len(imgsFeatures), len(imgsFeatures[0]))
-        print(time() - startTime)
+        # print(len(imgsFeatures), len(imgsFeatures[0]))
+        # print(time() - startTime)
         for i in range(len(redundancyDrawer)):
             # pic = np.where(redundancyDrawer[i] == 255, 0, 0).astype(np.uint8)
             # pic[np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)] == 255
-            cv.imshow(str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
-            print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
+            cv.imshow('Drawer: ' + str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
+        #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
+        for i in range(len(redundancyColorer)):
+            cv.imshow('Colorer: ' + str(i), testing.imshow_components(redundancyColorer[i]))
         cv.waitKey()
         cv.destroyAllWindows()
 
@@ -867,7 +882,7 @@ print(redundancyCombs)
 for imgNum, img in enumerate(testImages):
     file = np.load(img + '.npz')
     labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = \
-        file['labels'], file['labelsInfo'], file['textNonText'], file['textLabels'], file['wordLabels'], file[
+        file['labels'], file['labelsInfo'], file['textLabels'], file['wordLabels'], file[
             'phraseLabels'], file['nonTextLabels']
     imgsPhraseLabels.append(phraseLabels)
     imgsNonTextLabels.append(nonTextLabels)
