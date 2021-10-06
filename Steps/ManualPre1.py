@@ -2,14 +2,16 @@ import cv2 as cv
 import numpy as np
 import math
 
+import testing as testing
+
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
 
 # - Change HERE!!!!!
-topLpt = (0,0)
-topRpt = (0,0)
-botLpt = (0,0)
-botRpt = (0,0)
+topLpt = (480, 0)
+topRpt = (1115, 2985)
+botLpt = (5055, 0)
+botRpt = (4167, 2985)
 imagename = "step1redundancyfront"
 
 def empty():

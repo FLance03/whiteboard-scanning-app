@@ -34,17 +34,12 @@ def GetLabelsInfo(labels, numLabels=None):
 def cropOutEdges(img):
     assert img is not None, "Image does not exist"
     img = Step2.main(img)
-    print(img.shape)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     _, binarized = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
     binarized = np.where(binarized == 255, 0, 1)
-    # cv.imshow('bin', np.where(binarized == 255, 0, 255).astype(np.uint8))
-    # cv.waitKey()
-    # print(GetLabelsInfo(binarized))
     left, right, top, bottom = GetLabelsInfo(binarized)[0, :4]
-    print(left, right, top, bottom)
     binarized = np.where(binarized == 0, 255, 0)
     return binarized[top:bottom+1, left:right+1].astype(np.uint8)
 
-PlotIt(cropOutEdges(cv.imread('test.jpg')))
+# PlotIt(cropOutEdges(cv.imread('test.jpg')))
 
