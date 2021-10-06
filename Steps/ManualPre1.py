@@ -8,10 +8,10 @@ import testing as testing
 # - Change these values to change the coordinates for topline points and botline points
 
 # - Change HERE!!!!!
-topLpt = (480, 0)
-topRpt = (1115, 2985)
-botLpt = (5055, 0)
-botRpt = (4167, 2985)
+topLpt = (0, 480)
+topRpt = (2985, 1115)
+botLpt = (0, 5055)
+botRpt = (2985, 4167)
 imagename = "step1redundancyfront"
 
 def empty():
