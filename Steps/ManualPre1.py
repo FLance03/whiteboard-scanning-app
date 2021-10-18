@@ -8,16 +8,12 @@ import testing as testing
 # - Change these values to change the coordinates for topline points and botline points
 
 # - Change HERE!!!!!
-topLpt = (0, 480)
-topRpt = (2985, 1115)
-botLpt = (0, 5055)
-botRpt = (2985, 4167)
-<<<<<<< HEAD
-imagename = "step1redundancyfront"
-=======
-imageNameInput = "redundancyleft"
-imageNameOutput = "step1redundancyfront"
->>>>>>> b9f455bcdebc9467c61bf9102e7274d211648f29
+topLpt = (0, 1460)
+topRpt = (2986, 1090)
+botLpt = (0, 3990)
+botRpt = (2986, 4680)
+imageNameInput = "3s"
+imageNameOutput = imageNameInput
 
 def empty():
     pass
@@ -71,7 +67,8 @@ def findLinePoints(p1, p2, width):
 # cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 # cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/'+imageNameInput+'.jpg')
+img = cv.imread('images/Group Tests/1/'+imageNameInput+'.jpg')
+testing.PlotIt(img)
 width = 5000
 absWidth = 10000
 # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)

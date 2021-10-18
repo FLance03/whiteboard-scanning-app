@@ -10,8 +10,8 @@ from testing import testing
 
 # The number of rows in one chunks is 2*ROW_OVERLAP_SIZE and overlaps half of the rows (ROW_OVERLAP_SIZE)
 ROW_OVERLAP_SIZE = 2
-COL_OVERLAP_SIZE = 3
-COL_WINDOW_SIZE = 4
+COL_OVERLAP_SIZE = 5
+COL_WINDOW_SIZE = 10
 
 def SimpleLinearReg(x, y):
     x, y = np.array(x), np.array(y)

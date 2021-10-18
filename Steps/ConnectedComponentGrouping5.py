@@ -288,9 +288,9 @@ def PropagateNonTextLabels(textLabels, nonTextLabels):
     # Sort in ascending order by area
     sortInd = np.argsort(nonTextInfo[:, 9])
     nonTextInfo = nonTextInfo[sortInd]
-    aveHeight = np.average(textInfo[:, 8])
-    aveWidth = np.average(textInfo[:, 7])
-    thresh = (min(aveHeight, aveWidth) // 2).astype(np.uint8)
+    aveHeight = np.average(textInfo[:, 8]) if textInfo[:, 8].size != 0 else 0
+    aveWidth = np.average(textInfo[:, 7]) if textInfo[:, 7].size != 0 else 0
+    thresh = int(min(aveHeight, aveWidth) // 2)
     kernel = np.ones((thresh * 2 + 1, thresh * 2 + 1), dtype=np.uint8)
     for labelNum in nonTextInfo[:, 10]:
         nonTextLabel = np.where(nonTextLabels == labelNum, 1, 0)
@@ -540,14 +540,14 @@ def main(img):
     print(time() - start)
     return labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
 
-labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels  = main(cv.imread('testing/pics and texts/iotbinarized.jpg', 0))
-
-
-cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
-cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
-cv.imshow('Step 5: Words', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=450))
-cv.imshow('Step 5: Phrases', testing.ResizeWithAspectRatio(testing.imshow_components(phraseLabels), width=450))
-
-cv.waitKey()
-cv.destroyAllWindows()
+# labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = main(cv.imread('testing/pics and texts/iotbinarized.jpg', 0))
+#
+#
+# cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
+# cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
+# cv.imshow('Step 5: Words', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=450))
+# cv.imshow('Step 5: Phrases', testing.ResizeWithAspectRatio(testing.imshow_components(phraseLabels), width=450))
+#
+# cv.waitKey()
+# cv.destroyAllWindows()
 

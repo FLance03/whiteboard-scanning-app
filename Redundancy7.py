@@ -13,8 +13,8 @@ from testing import testing
 
 ROW_OVERLAP_SIZE = 2
 ROW_WINDOW_SIZE = ROW_OVERLAP_SIZE * 2
-COL_OVERLAP_SIZE = 3
-COL_WINDOW_SIZE = 4
+COL_OVERLAP_SIZE = 5
+COL_WINDOW_SIZE = 10
 
 MINHEIGHTPROP = 0.4
 # THRESHOLD1 is the threshold where only when the sum of squares is greater than it that it will consider something redundant
@@ -27,6 +27,7 @@ count = 0
 countMerged = [0, 0, 0, 0]
 sumTime = 0
 
+# For testing only
 lapTime = time()
 sumTime = sumTime + time() - lapTime
 count += 1
@@ -35,19 +36,36 @@ def TestCompatibilityOfTwoFeatures(first, second):
     assert first.shape == second.shape, "hi"
     assert first.ndim == 3, str(first.ndim)
 
+    quarterPi = np.pi / 2
     withChangeInds = np.logical_and(first[:, :, 11]==2, second[:, :, 11]==2)
-    withoutChange = (np.abs(first[:, :, 0] - second[:, :, 0]) <= 0.5) & \
-                    (np.abs(first[:, :, 1] - second[:, :, 1]) <= 0.5) & \
-                    (np.abs(first[:, :, 2] - second[:, :, 2]) <= 0.5) & \
-                    (np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) & \
-                    (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1)
-    withChange = (np.abs(first[:, :, 2] - second[:, :, 2]) <= 0.5) & \
-                 (np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) & \
-                 (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1) & \
-                 (np.abs(first[:, :, 8] - second[:, :, 8]) <= 0.5) & \
-                 (np.abs(first[:, :, 9] - second[:, :, 9]) <= 0.5) & \
-                 (np.abs(first[:, :, 10] - second[:, :, 10]) <= 1)
-
+    withoutChange = (
+                    ((np.abs(first[:, :, 0] - second[:, :, 0]) <= quarterPi) |
+                     (np.abs(first[:, :, 1] - second[:, :, 1]) <= quarterPi)) &
+                     (np.abs(first[:, :, 2] - second[:, :, 2]) <= quarterPi) |
+                    ((np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) &
+                     (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1))
+                    )
+    # withChange = (np.abs(first[:, :, 2] - second[:, :, 2]) <= 0.5) & \
+    #              (np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) & \
+    #              (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1) & \
+    #              (np.abs(first[:, :, 8] - second[:, :, 8]) <= 0.5) & \
+    #              (np.abs(first[:, :, 9] - second[:, :, 9]) <= 0.5) & \
+    #              (np.abs(first[:, :, 10] - second[:, :, 10]) <= 1)
+    withChange = (
+                    ((np.abs(first[:, :, 0] - second[:, :, 0]) <= quarterPi) |
+                     (np.abs(first[:, :, 1] - second[:, :, 1]) <= quarterPi)) &
+                     (np.abs(first[:, :, 2] - second[:, :, 2]) <= quarterPi) |
+                    ((np.abs(first[:, :, 6] - second[:, :, 6]) <= quarterPi) |
+                     (np.abs(first[:, :, 7] - second[:, :, 7]) <= quarterPi)) &
+                     (np.abs(first[:, :, 8] - second[:, :, 8]) <= quarterPi) |
+                    ((np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) &
+                     (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1)) |
+                    ((np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.3) &
+                     (np.abs(first[:, :, 4] - second[:, :, 4]) <= 0.6))
+                    )
+    # testing.FullPrint2('print1', first)
+    # testing.FullPrint2('print2', second)
+    # exit()
     withinThresholds = np.where(withChangeInds, withChange, withoutChange)
     # When within thresholds, label as 2
     withinThresholds = np.where(withinThresholds, 2, 0)
@@ -66,8 +84,7 @@ def TestCompatibilityOfTwoFeatures(first, second):
 def GetWeight(redundancyMatrix):
     imgMatrix = np.where(redundancyMatrix==0, 0, 255)
     numLabels, labels = cv.connectedComponents(imgMatrix.astype(np.uint8), connectivity=8)
-    # labelsInfo = Step5.GetLabelsInfo(labels, numLabels)
-    labelsInfo = Step5.GetLabelsInfo2(labels, numLabels)
+    labelsInfo = Step5.GetLabelsInfo(labels, numLabels)
     assert labelsInfo.ndim == 2
     labelWeights = np.zeros((numLabels), np.uint64)
     # Find total weights for each label
@@ -101,10 +118,11 @@ def GetWeight(redundancyMatrix):
                 sum += labelWeights[rightSort[travRightInd, 10]]
                 # Every time the sum runs, compare computed weights
                 # The sum (each operand in the sum was squared) is divided by the area/num of pixels taken
-                weight = sum / np.sqrt((rightSort[travRightInd, 1] - leftSort[leftInd, 0] + 1) * len(redundancyMatrix))
-                numZerosPunish = np.sqrt(np.count_nonzero(redundancyMatrix[:, leftSort[leftInd, 0]:rightSort[travRightInd, 1] + 1]) == 0)
-                if numZerosPunish > 0:
-                    weight /= numZerosPunish
+                numZerosPunish = max(np.sqrt(np.count_nonzero(redundancyMatrix[:, leftSort[leftInd, 0]:rightSort[travRightInd, 1] + 1]))
+                                     , 1)
+                weight = sum / (np.sqrt((rightSort[travRightInd, 1] - leftSort[leftInd, 0] + 1) * len(redundancyMatrix)) + numZerosPunish)
+                #print('Count:         ', np.sqrt((rightSort[travRightInd, 1] - leftSort[leftInd, 0] + 1) * len(redundancyMatrix)), numZerosPunish)
+                weight /= numZerosPunish
                 if weight > retVal['weight']:
                     retVal = {
                         'weight': weight,
@@ -136,7 +154,7 @@ def CompareFeatures(first, second):
         return winner
     smallerStart, smallerStop = len(smallerFeature[0]) - THRESHOLD2, len(smallerFeature[0])
     largerStart, largerStop = 0, THRESHOLD2
-    print(len(first[0]), len(second[0]), len(first[0]) + len(second[0]) - 2*(THRESHOLD2-1) - 1)
+    # print(len(first[0]), len(second[0]), len(first[0]) + len(second[0]) - 2*(THRESHOLD2-1) - 1)
     for _ in range(len(first[0]) + len(second[0]) - 2*(THRESHOLD2-1) - 1):
         smallerWindow = smallerFeature[:, smallerStart:smallerStop, :]
         largerWindow = largerFeature[:, largerStart:largerStop, :]
@@ -244,7 +262,7 @@ def GetDegreeOfRedundancy(pastCCFeatures, currentCCFeatures, pastImg, currentImg
         comparison = CompareFeatures(smallerCropped, largerCropped)
         # if currentCCFeatures['index'] == 1:
         #     cv.imshow('past', testing.imshow_components(pastCCFeatures['img']))
-        #     print(comparison['weight'])
+        #     cv.imshow('current', testing.imshow_components(currentCCFeatures['img']))
         #     cv.waitKey()
         #     cv.destroyAllWindows()
         # if comparison['weight'] > 0:
@@ -359,7 +377,7 @@ def GetMergedType(winner, firstWidth, secondWidth):
 def CreateMergedFeatures(relative, intersection, final, height, width):
     finalX = relative[0] + intersection[0] - final[0]
     finalY = relative[1] + intersection[1] - final[1]
-    return finalX, finalX + width, finalY, finalY + height
+    return finalX, finalX + width - 1, finalY, finalY + height - 1
 
 
 def CheckBlackIntersection(firstFeatures, firstBox, secondFeatures, secondBox):
@@ -368,10 +386,10 @@ def CheckBlackIntersection(firstFeatures, firstBox, secondFeatures, secondBox):
     greaterLeft = max(firstBox[0], secondBox[0])
     lesserRight = min(firstBox[0] + len(firstFeatures[0]), secondBox[0] + len(secondFeatures[0]))
     assert greaterTop <= lesserBottom and greaterLeft <= lesserRight, (firstBox, secondBox, firstFeatures.shape, secondFeatures.shape)
-    currentIntersect = [greaterLeft - firstBox[0], lesserRight - firstBox[1],
-                        greaterTop - firstBox[2], lesserBottom - firstBox[3]]
-    pastIntersect = [greaterLeft - secondBox[0], lesserRight - secondBox[1],
-                        greaterTop - secondBox[2], lesserBottom - secondBox[3]]
+    currentIntersect = [greaterLeft - firstBox[0], lesserRight - firstBox[0],
+                        greaterTop - firstBox[2], lesserBottom - firstBox[2]]
+    pastIntersect = [greaterLeft - secondBox[0], lesserRight - secondBox[0],
+                        greaterTop - secondBox[2], lesserBottom - secondBox[2]]
     currentMerged = firstFeatures[currentIntersect[2]:currentIntersect[3]+1, currentIntersect[0]:currentIntersect[1]+1]
     pastMerged = secondFeatures[pastIntersect[2]:pastIntersect[3]+1, pastIntersect[0]:pastIntersect[1]+1]
     # If even one in currentMerged or pastMerged has a non-blank feature, return False else return True
@@ -427,7 +445,7 @@ def TryToMergeFeatures(imgsFeatures, currentImgFeatures, matchedLabels, currentM
                 greaterTop = max(merged[2], box[2])
                 lesserBottom = min(merged[3], box[3])
                 if (greaterLeft <= lesserRight and greaterTop <= lesserBottom) \
-                        and not CheckBlackIntersection(imgsFeatures[boxNum][boxInd]['features'], box, currentCCFeatures['features'], merged):
+                       and not CheckBlackIntersection(imgsFeatures[boxNum][boxInd]['features'], box, currentCCFeatures['features'], merged):
                     return False
     else:
         # Check both coordinates
@@ -445,14 +463,17 @@ def TryToMergeFeatures(imgsFeatures, currentImgFeatures, matchedLabels, currentM
                 currentBoxNum, currentImgInd = currentBox[4], currentImgFeatures[currentBox[5]]['index'] \
                                                                     if currentBox[4] == currentImgNum else currentBox[5]
                 if currentBox[4] != pastImgNum or currentBox[5] != pastImgInd:
-                    greaterLeft = max(pastBox[0] + oldOrigin[0], currentBox[0])
-                    lesserRight = min(pastBox[1] + oldOrigin[0], currentBox[1])
-                    greaterTop = max(pastBox[2] + oldOrigin[1], currentBox[2])
-                    lesserBottom = min(pastBox[3] + oldOrigin[1], currentBox[3])
-                    print(currentBoxNum, currentImgInd)
+                    newPastBox = [pastBox[0] + oldOrigin[0],
+                              pastBox[1] + oldOrigin[0],
+                              pastBox[2] + oldOrigin[1],
+                              pastBox[3] + oldOrigin[1]]
+                    greaterLeft = max(newPastBox[0], currentBox[0])
+                    lesserRight = min(newPastBox[1], currentBox[1])
+                    greaterTop = max(newPastBox[2], currentBox[2])
+                    lesserBottom = min(newPastBox[3], currentBox[3])
                     if (greaterLeft <= lesserRight and greaterTop <= lesserBottom) \
-                            and not CheckBlackIntersection(imgsFeatures[currentBoxNum][currentImgInd]['features'], currentBox,
-                                                           imgsFeatures[pastBoxNum][pastBoxInd]['features'], pastBox):
+                           and not CheckBlackIntersection(imgsFeatures[currentBoxNum][currentImgInd]['features'], currentBox,
+                                                          imgsFeatures[pastBoxNum][pastBoxInd]['features'], newPastBox):
                         return False
         for box in currentMergedFeatures[currentCoord]:
             greaterLeft = max(winner['currentLeft'], box[0])
@@ -464,7 +485,25 @@ def TryToMergeFeatures(imgsFeatures, currentImgFeatures, matchedLabels, currentM
     return True
 
 
-def RecordRedundancy(redundancyDrawer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
+def PositionRedundancy(intersect, CCFeatures, intersectHeight, intersectWidth):
+    nonOverlapSize = COL_WINDOW_SIZE - COL_OVERLAP_SIZE
+    intersectLeft = intersect[0] * nonOverlapSize + COL_WINDOW_SIZE
+    intersectRight = intersect[1] * nonOverlapSize + COL_WINDOW_SIZE
+    nonOverlapSize = ROW_WINDOW_SIZE - ROW_OVERLAP_SIZE
+    intersectTop = intersect[2] * nonOverlapSize + ROW_WINDOW_SIZE
+    intersectBottom = intersect[3] * nonOverlapSize + ROW_WINDOW_SIZE
+    assert CCFeatures['info'][8] == len(CCFeatures['origImg']) and CCFeatures['info'][7] == len(
+        CCFeatures['origImg'][0])
+    origImgPointers = CCFeatures['origImg'][intersectTop:intersectTop + intersectHeight,
+                      intersectLeft:intersectLeft + intersectWidth]
+    imgNumInds = origImgPointers[:, :, 0].flatten()
+    rowInds = origImgPointers[:, :, 1].flatten()
+    colInds = origImgPointers[:, :, 2].flatten()
+    return imgNumInds, rowInds, colInds
+
+
+def RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
+    global redundancyCounter
     # testing.ShowChosenRedundancy2(currentCCFeatures, pastCCFeatures, {
     #     'currentLeft': intersectCurrent[0],
     #     'currentRight': intersectCurrent[1],
@@ -477,43 +516,47 @@ def RecordRedundancy(redundancyDrawer, currentCCFeatures, pastCCFeatures, imgNum
     # })
     assert intersectCurrent[1] - intersectCurrent[0] == intersectPast[1] - intersectPast[0] and \
            intersectCurrent[3] - intersectCurrent[2] == intersectPast[3] - intersectPast[2]
-    intersectTop = intersectPast[2]
-    intersectLeft = intersectPast[0]
-    nonOverlapSize = ROW_WINDOW_SIZE - ROW_OVERLAP_SIZE
-    assert pastCCFeatures['info'][8] == len(pastCCFeatures['origImg']) and pastCCFeatures['info'][7] == len(pastCCFeatures['origImg'][0])
-    intersectHeight = min((intersectPast[3] - intersectPast[2] + 1) * nonOverlapSize + ROW_WINDOW_SIZE,
-                          pastCCFeatures['info'][8] - intersectPast[2], currentCCFeatures['info'][8] - intersectCurrent[2])
-    origImgPointers = pastCCFeatures['origImg'][intersectTop:intersectTop + intersectHeight,
-                                        intersectLeft + redundancyOffset[0]:intersectLeft + redundancyOffset[1] + 1]
-    imgNumInds = origImgPointers[:, :, 0].flatten()
-    rowInds = origImgPointers[:, :, 1].flatten()
-    colInds = origImgPointers[:, :, 2].flatten()
-    redundancyVals = redundancyDrawer[imgNumInds, rowInds, colInds]
-    labels = redundancyCombs[imgNumInds, np.full((len(imgNumInds)), imgNum)]
-    assert labels.size == redundancyVals.size
-    redundancyDrawer[imgNumInds, rowInds, colInds] = np.where(redundancyVals==255, labels, redundancyVals)
 
-    intersectLeft = intersectCurrent[0]
-    intersectTop = intersectCurrent[2]
-    assert np.all(currentCCFeatures['origImg'][intersectTop:intersectTop + intersectHeight,
-                                        intersectLeft + redundancyOffset[0]:intersectLeft + redundancyOffset[1] + 1][:, :, 0] == imgNum)
-    redundancyVals = redundancyDrawer[imgNum, currentCCFeatures['info'][2] + intersectTop:
-                                               currentCCFeatures['info'][2] + intersectTop + intersectHeight,
-                                                    currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[0]:
-                                                    currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[1] + 1]
-    redundancyDrawer[imgNum, currentCCFeatures['info'][2] + intersectTop:
-                             currentCCFeatures['info'][2] + intersectTop + intersectHeight,
-                                currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[0]:
-                                currentCCFeatures['info'][0] + intersectLeft + redundancyOffset[1] + 1] = np.where(
-                                        redundancyVals==255, labels.reshape(*redundancyVals.shape), redundancyVals)
+    nonOverlapSize = ROW_WINDOW_SIZE - ROW_OVERLAP_SIZE
+    # Scale from feature to image, and make sure the obtained height does not go beyond the image height from intersectTop
+    intersectHeight = min((intersectPast[3] - intersectPast[2] + 1) * nonOverlapSize + ROW_WINDOW_SIZE,
+                          pastCCFeatures['info'][8] - (intersectPast[2] * nonOverlapSize + ROW_WINDOW_SIZE),
+                          currentCCFeatures['info'][8] - (intersectCurrent[2] * nonOverlapSize + ROW_WINDOW_SIZE))
+    nonOverlapSize = COL_WINDOW_SIZE - COL_OVERLAP_SIZE
+    # Scale from feature to image, and make sure the obtained width does not go beyond the image width from intersectLeft
+    intersectWidth = min((intersectPast[1] - intersectPast[0] + 1) * nonOverlapSize + COL_WINDOW_SIZE,
+                         pastCCFeatures['info'][7] - (intersectPast[0] * nonOverlapSize + COL_WINDOW_SIZE),
+                         currentCCFeatures['info'][7] - (intersectCurrent[0] * nonOverlapSize + COL_WINDOW_SIZE))
+
+    pastImgInds, pastRowInds, pastColInds = PositionRedundancy(intersectPast, pastCCFeatures,
+                                                                intersectHeight, intersectWidth)
+    pastLabels = redundancyColorer[pastImgInds, pastRowInds, pastColInds]
+    # np.unique is already sorted
+    uniqueInds = np.unique(pastImgInds)
+    colors = redundancyCounter + np.searchsorted(uniqueInds, pastImgInds)
+    redundancyColorer[pastImgInds, pastRowInds, pastColInds] = np.where(pastLabels == 0,
+                                                                        colors, pastLabels)
+    # redundancyDrawer[pastImgInds, pastRowInds, pastColInds] = np.where(redundancyVals == 255, 1, redundancyVals)
+
+    currentImgInds, currentRowInds, currentColInds = PositionRedundancy(intersectCurrent, currentCCFeatures,
+                                                                        intersectHeight, intersectWidth)
+    currentLabels = redundancyColorer[currentImgInds, currentRowInds, currentColInds]
+    redundancyColorer[currentImgInds, currentRowInds, currentColInds] = np.where(np.logical_and(pastLabels != 0, currentLabels == 0),
+                                                                                 pastLabels, currentLabels)
+    currentLabels = redundancyColorer[currentImgInds, currentRowInds, currentColInds]
+    redundancyColorer[currentImgInds, currentRowInds, currentColInds] = np.where(currentLabels == 0,
+                                                                                 colors, currentLabels)
+    # redundancyDrawer[currentImgInds, currentRowInds, currentColInds] = np.where(redundancyVals == 255, 1, redundancyVals)
+    assert uniqueInds.ndim == 1
+    redundancyCounter += uniqueInds.size
 
 
 def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
-                     pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyDrawer, matched=-1):
+                     pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyColorer, matched=-1):
     global countMerged
     weight, currentImgInd, pastImgNum, pastImgInd, winner, currentCCFeatures, pastCCFeatures = maxWeight
     assert imgNum != pastImgNum
-    RecordRedundancy(redundancyDrawer, currentCCFeatures, pastCCFeatures, imgNum,
+    RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNum,
                         (winner['currentLeft'], winner['currentRight'], winner['currentTop'], winner['currentBottom']),
                         (winner['pastLeft'], winner['pastRight'], winner['pastTop'], winner['pastBottom']),
                                                                             winner['redundancyOffset'])
@@ -554,7 +597,7 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         # Other than the left, right, top, bottom coordinates now being occupied because of merging given by mergedFeatures,
         #    we also include a "pointer" represented by currentCCType, imgNum, and currentLabelNum to point back to the
         #    information (info, features, img, etc.) of the newly merged feature.
-        pastMergedFeatures[-1].append(np.array([0, pastCCFeatures['info'][7] + 1, 0, pastCCFeatures['info'][8] + 1
+        pastMergedFeatures[-1].append(np.array([0, len(pastCCFeatures['features'][0]) - 1, 0, len(pastCCFeatures['features']) - 1
                                                    , pastImgNum, pastImgInd]))
         pastMergedFeatures[-1].append(np.r_[mergedFeatures, [imgNum, currentImgInd]])
     elif matched == 0:
@@ -693,14 +736,13 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
                     img = imgsFeatures[boxNum][boxInd]['img']
                     origImg = imgsFeatures[boxNum][boxInd]['origImg']
                     assert len(img) == len(origImg) and len(img[0]) == len(origImg[0])
-                    print(edges[2]+box[2], edges[2]+box[2]+len(img), edges[0]+box[0], edges[0]+box[0]+len(img[0]))
                     newImg[edges[2]+box[2]:edges[2]+box[2]+len(img), edges[0]+box[0]:edges[0]+box[0]+len(img[0])] = img
                     newOrigImg[edges[2]+box[2]:edges[2]+box[2]+len(origImg), edges[0]+box[0]:edges[0]+box[0]+len(origImg[0])] = origImg
                     assert len(img) == len(origImg) and len(img[0]) == len(origImg[0])
                     deleteInds[boxNum, boxInd] = True
                     assert usedUpCCs[boxNum, boxInd] == False
                     usedUpCCs[boxNum, boxInd] = True
-            info = Step5.GetLabelsInfo2(np.where(newImg!=0, 1, 0))[0]
+            info = Step5.GetLabelsInfo(np.where(newImg!=0, 1, 0))[0]
             # If the edge rows/columns still have blanks, delete those rows/columns
             newImg = newImg[info[2]:info[3]+1, info[0]:info[1]+1]
             newOrigImg = newOrigImg[info[2]:info[3]+1, info[0]:info[1]+1]
@@ -736,7 +778,8 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
     return imgsFeatures
 
 
-def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels, type2Archives, redundancyDrawer, currentImgFeatures):
+def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
+                      type2Archives, redundancyColorer, currentImgFeatures, THRESHOLD1):
     currentMergedFeatures = []
     pastMergedFeatures = []
     maxLengthPossible = max([len(imgsFeatures[i]) for i in range(imgNum + 1)])
@@ -748,6 +791,8 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
     while len(redundantHeap) > 0:
         maxWeight = heapq.heappop(redundantHeap)
         weight, currentImgInd, pastImgNum, pastImgInd, winner, currentCCFeatures, pastCCFeatures = maxWeight
+        if -weight < THRESHOLD1:
+            break
         hasMatched = [matchedLabels[imgNum, currentImgInd] != -1,
                         matchedLabels[pastImgNum, pastImgInd] != -1]
         if True in hasMatched:
@@ -765,16 +810,21 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
             #     testing.ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, winner, plotIt=True)
             if mergeable:
                 AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures, pastMergedFeatures,
-                                    imgNum, type2s, relatives, type2Archives, redundancyDrawer, matched=matchedInds)
+                                    imgNum, type2s, relatives, type2Archives, redundancyColorer, matched=matchedInds)
         else:
             AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
-                             pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyDrawer)
+                             pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyColorer)
+        # if weight <= -0:
+        #     print('is New: ' + str((not (True in hasMatched)) or (hasMatched and mergeable)))
+        #     print(weight)
+        #     testing.ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, winner, COL_WINDOW_SIZE, COL_OVERLAP_SIZE, plotIt=True)
     imgsFeatures = OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatures,
                     matchedLabels, deleteInds, imgsPhraseLabels, imgsNonTextLabels, currentImgFeatures)
     return imgsFeatures
 
 
-def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
+def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer):
+    global redundancyCounter
     # imgsFeatures is a 3d array (not including the numpy arrays inside)
     redundantCC = []
     pastImgFeatures = []
@@ -786,6 +836,7 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
     pastImgFeatures.append(imgsFeatures[0].copy())
     # For each image...
     for imgNum in range(1, len(imgsFeatures)):
+        weights = []
         currentImgFeatures = imgsFeatures[imgNum]
         type2Archives.append([])
         for ind in range(len(currentImgFeatures)):
@@ -824,6 +875,7 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
                                                                     else imgsNonTextLabels[imgNum]
                         winner = GetDegreeOfRedundancy(pastCCFeatures[pastImgInd], currentCCFeatures, pastImg, currentImg)
                         if winner['weight'] > 0:
+                            weights.append(winner['weight'])
                             # Maxheap based on the given score of redundancy via winner['weight']
                             heapq.heappush(redundantHeap, (-winner['weight'], currentImgInd, pastImgNum, pastImgInd, winner, currentCCFeatures,
                                                            pastCCFeatures[pastImgInd]))
@@ -832,28 +884,45 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer):
                     #    for this pastCCFeatures[pastImgInds[pastImgNum]]
                     pastImgInd += 1
             currentImgInd += 1
+        weights = np.array(weights)
+        testing.Summarize(weights)
+        print(len(weights))
+        print(len(redundantHeap))
+        absMed = weights - np.median(weights)
+        IQR = np.percentile(absMed, 75) - np.percentile(absMed, 25)
+        THRESHOLD1 = np.median(weights) * 1.5
+        print('THRESH: ', THRESHOLD1)
         imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
-                                       type2Archives[-1], redundancyDrawer, currentImgFeatures)
-        for i, imgFeatures in enumerate(imgsFeatures[0]):
-            cv.imshow(str(i), testing.imshow_components(imgFeatures['img'].astype(np.uint8)))
-            # testing.FullPrint2('print1', imgFeatures['img'])
-            cv.waitKey()
-            cv.destroyAllWindows()
-        print(len(imgsFeatures), len(imgsFeatures[0]))
-        print(time() - startTime)
-        for i in range(len(redundancyDrawer)):
-            # pic = np.where(redundancyDrawer[i] == 255, 0, 0).astype(np.uint8)
-            # pic[np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)] == 255
-            cv.imshow(str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
-            print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
+                                       type2Archives[-1], redundancyColorer, currentImgFeatures, THRESHOLD1)
+        testing.ColorRedundancy(redundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels)
+    retVal = [{'img': CC['img'], 'type': CC['type']} for pic in imgsFeatures for CC in pic]
+    for img in retVal:
+        print(img['type'])
+        cv.imshow('img', testing.imshow_components(img['img'].astype(np.uint8)))
         cv.waitKey()
         cv.destroyAllWindows()
+    return retVal
+        # for i, imgFeatures in enumerate(imgsFeatures[0]):
+        #     cv.imshow(str(i), testing.imshow_components(imgFeatures['img'].astype(np.uint8)))
+        #     # testing.FullPrint2('print1', imgFeatures['img'])
+        #     cv.waitKey()
+        #     cv.destroyAllWindows()
+        # # print(len(imgsFeatures), len(imgsFeatures[0]))
+        # # print(time() - startTime)
+        # for i in range(len(redundancyDrawer)):
+        #     # pic = np.where(redundancyDrawer[i] == 255, 0, 0).astype(np.uint8)
+        #     # pic[np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)] == 255
+        #     cv.imshow('Drawer: ' + str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
+        # #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
 
 
-testImages = ['step1redundancyfront', 'step1redundancyleftleft', 'step1redundancyright']
+testImages = ['1f', '2f', '3f', '4f', '6f']
+maxWidth = 0
+maxHeight = 0
 imgsFeatures = []
 imgsPhraseLabels = []
 imgsNonTextLabels = []
+redundancyColorer = []
 redundancyDrawer = []
 numImgs = len(testImages)
 combinations = sorted(list(comb(range(numImgs), 2)))
@@ -867,11 +936,14 @@ print(redundancyCombs)
 for imgNum, img in enumerate(testImages):
     file = np.load(img + '.npz')
     labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = \
-        file['labels'], file['labelsInfo'], file['textNonText'], file['textLabels'], file['wordLabels'], file[
+        file['labels'], file['labelsInfo'], file['textLabels'], file['wordLabels'], file[
             'phraseLabels'], file['nonTextLabels']
     imgsPhraseLabels.append(phraseLabels)
     imgsNonTextLabels.append(nonTextLabels)
+    print(phraseLabels.shape)
     assert phraseLabels.shape == nonTextLabels.shape
+    maxHeight = max(maxHeight, phraseLabels.shape[0])
+    maxWidth = max(maxWidth, phraseLabels.shape[1])
     redundancyDrawer.append(np.where(np.logical_or(phraseLabels!=0, nonTextLabels!=0), 255, 0))
     imgFeatures = []
     for ctr in range(2):
@@ -914,10 +986,16 @@ for imgNum, img in enumerate(testImages):
             imgFeatures[-1]['features'] = features
     # Base the sorting on the first element (data about top position) of each row
     imgsFeatures.append(sorted(imgFeatures, key=lambda row:row['top']))
+for ind, img in enumerate(redundancyDrawer):
+    redundancyDrawer[ind] = np.pad(img, [(0, maxHeight-img.shape[0]), (0, maxWidth-img.shape[1])],
+                                  mode='constant', constant_values=0)
+redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
+redundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
 startTime = time()
 print(time() - startTime)
-redundancyDrawer = np.array(redundancyDrawer)
-main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyDrawer)
+redundancyColorer = np.array(redundancyColorer)
+redundancyCounter = 2
+main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer)
 # phraseLabelsInfo = Step5.GetLabelsInfo(phraseLabels)
 # features = Step6.main(phraseLabels, phraseLabelsInfo[0], 1)
 # testing.FullPrint(features)

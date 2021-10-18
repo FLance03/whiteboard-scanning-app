@@ -41,5 +41,8 @@ def cropOutEdges(img):
     binarized = np.where(binarized == 0, 255, 0)
     return binarized[top:bottom+1, left:right+1].astype(np.uint8)
 
-# PlotIt(cropOutEdges(cv.imread('test.jpg')))
+def main():
+    PlotIt(cropOutEdges(cv.imread('test.jpg')))
+    return cropOutEdges(cv.imread('test.jpg'))
 
+main()
