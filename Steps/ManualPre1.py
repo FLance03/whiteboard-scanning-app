@@ -7,13 +7,14 @@ import testing as testing
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
 
-# - Change HERE!!!!!
-topLpt = (0, 1460)
-topRpt = (2986, 1090)
-botLpt = (0, 3990)
-botRpt = (2986, 4680)
-imageNameInput = "3s"
-imageNameOutput = imageNameInput
+# - Change HERE!!!!!=
+topLpt = (0, 480)
+topRpt = (2985, 1115)
+botLpt = (0, 5055)
+botRpt = (2985, 4167)
+
+imageNameInput = "redundancyleft"
+imageNameOutput = "step1redundancyfront"=
 
 def empty():
     pass
