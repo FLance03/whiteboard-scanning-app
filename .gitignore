@@ -2,3 +2,6 @@ __pycache__/
 *.npz
 *.code-workspace
 *.jpg
+*.JPG
+*.png
+*.PNG
