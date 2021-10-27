@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app/screens/Photos.dart';
 
 import 'screens/screens.dart';
 
@@ -20,7 +21,7 @@ ThemeData _theme() {
 
 RouteFactory _routes() {
   return (RouteSettings settings) {
-    final arguments = settings.arguments; //Needed for passing data between screens
+    final dynamic arguments = settings.arguments; //Needed for passing data between screens
     Widget screen;
     switch (settings.name) {
       // case TestRoute:
@@ -31,6 +32,11 @@ RouteFactory _routes() {
         break;
       case '/camera':
         screen = Camera();
+        break;
+      case '/photos':
+        screen = Photos(
+          files: arguments['photos'],
+        );
         break;
       default:
         return null;

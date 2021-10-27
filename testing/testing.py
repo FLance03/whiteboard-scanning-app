@@ -114,8 +114,9 @@ def ShowCurrentPast(currentCCFeatures, pastCCFeatures):
     cv.waitKey()
     cv.destroyAllWindows()
 
-def ColorRedundancy(redundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels):
-    redundancyColorer = redundancyColorer.copy().astype(np.uint16)
+def ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels):
+    redundancyColorer = currentRedundancyColorer.copy().astype(np.uint8)
+    # redundancyColorer = np.concatenate((currentRedundancyColorer, pastRedundancyColorer), axis=0).astype(np.uint8)
     uniqueLabels = np.unique(redundancyColorer)
     maxLabel = np.max(uniqueLabels)
     uniqueLabelsLen = len(uniqueLabels)
@@ -134,6 +135,9 @@ def ColorRedundancy(redundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsN
             labeled_img[label_hue==0] = 0
             colored = labeled_img
             # currImg holds all images in BGR format where those with writings are white
+            # currImg = np.zeros((*imgsNonTextLabels[i % len(currentRedundancyColorer)].shape, 3), dtype=np.uint8)
+            # currImg[imgsNonTextLabels[i % len(currentRedundancyColorer)].nonzero()] = (255, 255, 255)
+            # currImg[imgsPhraseLabels[i % len(currentRedundancyColorer)].nonzero()] = (255, 255, 255)
             currImg = np.zeros((*imgsNonTextLabels[i].shape, 3), dtype=np.uint8)
             currImg[imgsNonTextLabels[i].nonzero()] = (255, 255, 255)
             currImg[imgsPhraseLabels[i].nonzero()] = (255, 255, 255)

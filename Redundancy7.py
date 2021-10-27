@@ -502,7 +502,7 @@ def PositionRedundancy(intersect, CCFeatures, intersectHeight, intersectWidth):
     return imgNumInds, rowInds, colInds
 
 
-def RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
+def RecordRedundancy(currentRedundancyColorer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
     global redundancyCounter
     # testing.ShowChosenRedundancy2(currentCCFeatures, pastCCFeatures, {
     #     'currentLeft': intersectCurrent[0],
@@ -530,21 +530,21 @@ def RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNu
 
     pastImgInds, pastRowInds, pastColInds = PositionRedundancy(intersectPast, pastCCFeatures,
                                                                 intersectHeight, intersectWidth)
-    pastLabels = redundancyColorer[pastImgInds, pastRowInds, pastColInds]
+    pastLabels = currentRedundancyColorer[pastImgInds, pastRowInds, pastColInds]
     # np.unique is already sorted
     uniqueInds = np.unique(pastImgInds)
     colors = redundancyCounter + np.searchsorted(uniqueInds, pastImgInds)
-    redundancyColorer[pastImgInds, pastRowInds, pastColInds] = np.where(pastLabels == 0,
+    currentRedundancyColorer[pastImgInds, pastRowInds, pastColInds] = np.where(pastLabels == 0,
                                                                         colors, pastLabels)
     # redundancyDrawer[pastImgInds, pastRowInds, pastColInds] = np.where(redundancyVals == 255, 1, redundancyVals)
 
     currentImgInds, currentRowInds, currentColInds = PositionRedundancy(intersectCurrent, currentCCFeatures,
                                                                         intersectHeight, intersectWidth)
-    currentLabels = redundancyColorer[currentImgInds, currentRowInds, currentColInds]
-    redundancyColorer[currentImgInds, currentRowInds, currentColInds] = np.where(np.logical_and(pastLabels != 0, currentLabels == 0),
+    currentLabels = currentRedundancyColorer[currentImgInds, currentRowInds, currentColInds]
+    currentRedundancyColorer[currentImgInds, currentRowInds, currentColInds] = np.where(np.logical_and(pastLabels != 0, currentLabels == 0),
                                                                                  pastLabels, currentLabels)
-    currentLabels = redundancyColorer[currentImgInds, currentRowInds, currentColInds]
-    redundancyColorer[currentImgInds, currentRowInds, currentColInds] = np.where(currentLabels == 0,
+    currentLabels = currentRedundancyColorer[currentImgInds, currentRowInds, currentColInds]
+    currentRedundancyColorer[currentImgInds, currentRowInds, currentColInds] = np.where(currentLabels == 0,
                                                                                  colors, currentLabels)
     # redundancyDrawer[currentImgInds, currentRowInds, currentColInds] = np.where(redundancyVals == 255, 1, redundancyVals)
     assert uniqueInds.ndim == 1
@@ -552,11 +552,11 @@ def RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNu
 
 
 def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
-                     pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyColorer, matched=-1):
+                     pastMergedFeatures, imgNum, type2s, relatives, type2Archives, currentRedundancyColorer, matched=-1):
     global countMerged
     weight, currentImgInd, pastImgNum, pastImgInd, winner, currentCCFeatures, pastCCFeatures = maxWeight
     assert imgNum != pastImgNum
-    RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNum,
+    RecordRedundancy(currentRedundancyColorer, currentCCFeatures, pastCCFeatures, imgNum,
                         (winner['currentLeft'], winner['currentRight'], winner['currentTop'], winner['currentBottom']),
                         (winner['pastLeft'], winner['pastRight'], winner['pastTop'], winner['pastBottom']),
                                                                             winner['redundancyOffset'])
@@ -779,7 +779,7 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
 
 
 def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
-                      type2Archives, redundancyColorer, currentImgFeatures, THRESHOLD1):
+                      type2Archives, currentRedundancyColorer, currentImgFeatures, THRESHOLD1):
     currentMergedFeatures = []
     pastMergedFeatures = []
     maxLengthPossible = max([len(imgsFeatures[i]) for i in range(imgNum + 1)])
@@ -810,10 +810,10 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
             #     testing.ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, winner, plotIt=True)
             if mergeable:
                 AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures, pastMergedFeatures,
-                                    imgNum, type2s, relatives, type2Archives, redundancyColorer, matched=matchedInds)
+                                    imgNum, type2s, relatives, type2Archives, currentRedundancyColorer, matched=matchedInds)
         else:
             AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
-                             pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyColorer)
+                             pastMergedFeatures, imgNum, type2s, relatives, type2Archives, currentRedundancyColorer)
         # if weight <= -0:
         #     print('is New: ' + str((not (True in hasMatched)) or (hasMatched and mergeable)))
         #     print(weight)
@@ -823,7 +823,7 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
     return imgsFeatures
 
 
-def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer):
+def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer):
     global redundancyCounter
     # imgsFeatures is a 3d array (not including the numpy arrays inside)
     redundantCC = []
@@ -893,8 +893,8 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer):
         THRESHOLD1 = np.median(weights) * 1.5
         print('THRESH: ', THRESHOLD1)
         imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
-                                       type2Archives[-1], redundancyColorer, currentImgFeatures, THRESHOLD1)
-        testing.ColorRedundancy(redundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels)
+                                       type2Archives[-1], currentRedundancyColorer, currentImgFeatures, THRESHOLD1)
+        testing.ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels)
     retVal = [{'img': CC['img'], 'type': CC['type']} for pic in imgsFeatures for CC in pic]
     for img in retVal:
         print(img['type'])
@@ -922,7 +922,8 @@ maxHeight = 0
 imgsFeatures = []
 imgsPhraseLabels = []
 imgsNonTextLabels = []
-redundancyColorer = []
+currentRedundancyColorer = []
+pastRedundancyColorer = []
 redundancyDrawer = []
 numImgs = len(testImages)
 combinations = sorted(list(comb(range(numImgs), 2)))
@@ -990,12 +991,12 @@ for ind, img in enumerate(redundancyDrawer):
     redundancyDrawer[ind] = np.pad(img, [(0, maxHeight-img.shape[0]), (0, maxWidth-img.shape[1])],
                                   mode='constant', constant_values=0)
 redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
-redundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
+currentRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
 startTime = time()
 print(time() - startTime)
-redundancyColorer = np.array(redundancyColorer)
+currentRedundancyColorer = np.array(currentRedundancyColorer)
 redundancyCounter = 2
-main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer)
+main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer)
 # phraseLabelsInfo = Step5.GetLabelsInfo(phraseLabels)
 # features = Step6.main(phraseLabels, phraseLabelsInfo[0], 1)
 # testing.FullPrint(features)

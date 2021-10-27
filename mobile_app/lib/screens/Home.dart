@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:async';
+import 'dart:io';
+
+import '../classes/FileHelpers.dart';
 
 class Home extends StatelessWidget {
   @override
@@ -24,7 +29,7 @@ class Home extends StatelessWidget {
             const SizedBox(height: 10),
             ElevatedButton(
               style: style,
-              onPressed: () {},
+              onPressed: () => _photos(context),
               child: Text('Existing photos'),
             ),
           ],
@@ -34,7 +39,19 @@ class Home extends StatelessWidget {
   }
 
   void _camera(BuildContext context) {
-    //If Login Authetication returns true
     Navigator.pushNamed(context, '/camera');
+  }
+  void _photos(BuildContext context) async {
+    final directory = await getExternalStorageDirectory();
+    final imagePath = '${directory!.path}/photos' ;
+    final imageDir = await new Directory(imagePath).create();
+    print(await FileHelpers.dirContents(imageDir));
+    Navigator.pushNamed(
+      context, 
+      '/photos', 
+      arguments: {
+        'photos': await FileHelpers.dirContents(imageDir)
+      }
+    );
   }
 }

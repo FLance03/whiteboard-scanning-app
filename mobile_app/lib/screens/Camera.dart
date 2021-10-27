@@ -4,6 +4,8 @@ import 'package:camera/camera.dart';
 import 'dart:async';
 import 'dart:io';
 
+import '../classes/FileHelpers.dart';
+
 class Camera extends StatelessWidget {
   @override
   Widget build(BuildContext context){
@@ -78,11 +80,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             final image = await _controller.takePicture();
             print(image.path);
             final directory = await getExternalStorageDirectory();
-            final imagePath = '${directory!.path}/mobile_redundancy' ;
+            final imagePath = '${directory!.path}/photos' ;
             final imageDir = await new Directory(imagePath).create();
-            print(imagePath);
-            print(imageDir);
-            final newFile = File('$imagePath/test.jpg');
+            DateTime now = DateTime.now();
+            // yy-mm-dd-hh-min-sec-ms
+            String fileName = FileHelpers.formatDate(now);
+            print(fileName);
+            final newFile = File('$imagePath/$fileName.jpg');
             newFile.writeAsBytes(await image.readAsBytes());
 
             // await Navigator.of(context).push(
