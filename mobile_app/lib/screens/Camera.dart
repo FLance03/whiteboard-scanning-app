@@ -83,6 +83,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             final imagePath = '${directory!.path}/photos' ;
             final imageDir = await new Directory(imagePath).create();
             DateTime now = DateTime.now();
+            print(imageDir);
             // yy-mm-dd-hh-min-sec-ms
             String fileName = FileHelpers.formatDate(now);
             print(fileName);

@@ -27,10 +27,11 @@ class FileHelpers {
     for (int i=0 ; i < 7 ; i++) {
       nameParts[i] = '${addZeros[4 - nameParts[i].length]}${nameParts[i]}';
     }
+    print(nameParts);
     // yyyy-mm-dd-hh-mm-ss-mss
     return '${nameParts[0]}-${nameParts[1].substring(2)}-${nameParts[2].substring(2)}' +
-            '${nameParts[3].substring(2)}-${nameParts[4].substring(2)}-${nameParts[5].substring(2)}' +
-            '${nameParts[3].substring(1)}';
+            '-${nameParts[3].substring(2)}-${nameParts[4].substring(2)}-${nameParts[5].substring(2)}' +
+            '-${nameParts[3].substring(1)}';
   }
   static String getFileName(String path) {
     // Remove file extension
