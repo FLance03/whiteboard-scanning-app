@@ -32,6 +32,12 @@ class Home extends StatelessWidget {
               onPressed: () => _photos(context),
               child: Text('Existing photos'),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: style,
+              onPressed: () => _file(context),
+              child: Text('Existing files'),
+            ),
           ],
         ),
       ),
@@ -51,6 +57,20 @@ class Home extends StatelessWidget {
       '/photos', 
       arguments: {
         'photos': await FileHelpers.dirContents(imageDir)
+      }
+    );
+  }
+  void _file(BuildContext context) async {
+    final directory = await getExternalStorageDirectory();
+    final filePath = '${directory!.path}/Files';
+    final fileDir = await new Directory(filePath).create();
+    print(await FileHelpers.dirContents(fileDir));
+    print("fuck");
+    Navigator.pushNamed(
+      context, 
+      '/files', 
+      arguments: {
+        'files': await FileHelpers.dirContents(fileDir)
       }
     );
   }
