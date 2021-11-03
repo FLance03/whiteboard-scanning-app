@@ -15,6 +15,7 @@ class ListPhotos extends StatefulWidget {
 
 class _ListPhotosState extends State<ListPhotos> {
   int numShown = 15;
+  List<File> selectedPhotos = [];
   double picPadding = 0.0;
   int picsPerRow = 4;
 
@@ -23,58 +24,90 @@ class _ListPhotosState extends State<ListPhotos> {
     List<List<int>> uniqueDates = FileHelpers.getUniqueDates(
       this.widget.photos.map((photo) => FileHelpers.getFileName(photo.path)).toList()
     );
-
-    return  ListView.builder(
-      itemCount: uniqueDates.length,
-      itemBuilder: (BuildContext context, int i) {
-        // photosBlock holds all photos at a specific Date
-        List<Widget> photosBlock = WrapPhotos(screenContext, FileHelpers.filterFiles(
-          files: this.widget.photos,
-          filters: uniqueDates[i],
-        ));
-        // List<Widget> photosBlock = WrapPhotos(this.widget.photos, i);
-        print(i);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width,
-              color: Colors.grey[200],
-              padding: EdgeInsets.only(
-                left: 10,
-                top: 2,
-                bottom: 2,
-              ),
-              child: Text(
-                FormatYearMonthDay(
-                  year: uniqueDates[i][0],
-                  month: uniqueDates[i][1],
-                  day: uniqueDates[i][2],
+    print(selectedPhotos);
+    return  Column(
+      children: [
+        Expanded(
+          flex: 9,
+          child: ListView.builder(
+            itemCount: uniqueDates.length,
+            itemBuilder: (BuildContext context, int i) {
+              // photosBlock holds all photos at a specific Date
+              List<Widget> photosBlock = WrapPhotos(screenContext, FileHelpers.filterFiles(
+                files: this.widget.photos,
+                filters: uniqueDates[i],
+              ));
+              print(i);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.grey[200],
+                    padding: EdgeInsets.only(
+                      left: 10,
+                      top: 2,
+                      bottom: 2,
+                    ),
+                    child: Text(
+                      FormatYearMonthDay(
+                        year: uniqueDates[i][0],
+                        month: uniqueDates[i][1],
+                        day: uniqueDates[i][2],
+                      ),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: 50,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(picPadding),
+                      child: Wrap(
+                        spacing: 1,
+                        runSpacing: 1,
+                        direction: Axis.horizontal,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: photosBlock,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 15.0),
+                child: Text(
+                  'Selected: ${this.selectedPhotos.length}',
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
                 ),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 15.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Here
+                  },
+                  child: Text('Submit'),
                 ),
               ),
-            ),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: 50,
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(picPadding),
-                child: Wrap(
-                  spacing: 1,
-                  runSpacing: 1,
-                  direction: Axis.horizontal,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: photosBlock,
-                ),
-              ),
-            ),
-          ],
-        );
-      }
+            ],
+          ),
+        ),
+      ],
     );
   }
   String FormatYearMonthDay({required int year, required int month, required int day}) {
@@ -82,25 +115,52 @@ class _ListPhotosState extends State<ListPhotos> {
                     'September', 'October', 'November', 'December'];
     return '${months[month]} $day, $year';
   }
-  List<Image> WrapPhotos(BuildContext context, List<File> photos) {
+  List<GestureDetector> WrapPhotos(BuildContext context, List<File> photos) {
     double widthPerPic = (MediaQuery.of(context).size.width - 2*picPadding - (picsPerRow - 1)) / picsPerRow;
-    List<Image> images = [];
+    List<GestureDetector> images = [];
 
     for (int i=0 ; i < photos.length ; i++) {
       images.add(
-        Image.file(
-          photos[i],
-          width: widthPerPic,
+        GestureDetector(
+          onTap: () {
+            String fileName = FileHelpers.getFileName(photos[i].path);
+            if (this.selectedPhotos.indexWhere(
+              (photo) => FileHelpers.getFileName(photo.path) == fileName) == -1
+            ){
+              // Photo selected
+              setState(() {
+                this.selectedPhotos.add(photos[i]);
+              });
+            }else {
+              // Photo deselected
+              setState(() {
+                this.selectedPhotos.removeWhere(
+                  (photo) => FileHelpers.getFileName(photo.path) == fileName);
+              });
+            }
+          },
+          child: Container(
+            // Put border if selected (contained in this.selectedPhotos)
+            decoration: this.selectedPhotos.indexWhere(
+              (photo) => FileHelpers.getFileName(photo.path) == FileHelpers.getFileName(photos[i].path)) != -1
+            ? BoxDecoration(
+              border: Border.all(
+                width: 5.0,
+                color: Colors.green[200] as Color,
+              ),
+              borderRadius: BorderRadius.all(
+                  Radius.circular(5.0),
+              ),
+            )
+            : BoxDecoration(),
+            child: Image.file(
+              photos[i],
+              width: widthPerPic,
+            ),
+          ),
         )
       );
     }
-    // images.add(
-    //     Image.file(
-    //       photos[i],
-    //       height: 100,
-    //       width: 100,
-    //     )
-    //   );
     return images;
   }
 }
