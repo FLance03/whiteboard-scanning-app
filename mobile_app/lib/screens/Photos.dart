@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+
 
 import '../widgets/ListPhotos.dart';
 import '../classes/FileHelpers.dart';
 
 class Photos extends StatelessWidget {
   List<File> photos;
-  bool toOpen;
-  Photos({required List<File> files, required bool toOpen}):
+  Photos({required List<File> files}):
     // Sort by filename in descending order
-    this.photos = FileHelpers.sortByFileName(files),
-    this.toOpen = toOpen;
+    this.photos = FileHelpers.sortByFileName(files);
   
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,6 @@ class Photos extends StatelessWidget {
       ),
       body: ListPhotos(
         photos: this.photos,
-        toOpen: this.toOpen,
       )
     );
   }

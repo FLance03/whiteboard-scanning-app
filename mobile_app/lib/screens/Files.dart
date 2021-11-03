@@ -9,12 +9,9 @@ import '../classes/FileHelpers.dart';
 
 class Files extends StatelessWidget {
   List<File> files;
-  bool toOpen;
-
-  Files({required List<File> files, required bool toOpen}):
+  Files({required List<File> files}):
     // Sort by filename in descending order
-    this.files = FileHelpers.sortByFileName(files),
-    this.toOpen = toOpen;
+    this.files = FileHelpers.sortByFileName(files);
   
   @override
   Widget build(BuildContext context) {
@@ -24,15 +21,12 @@ class Files extends StatelessWidget {
       ),
       body: ListFiles( // make a listFiles.dart
         files: this.files,
-        toOpen: this.toOpen
       )
     );
   }
-
   factory Files.fromJson(Map<String, dynamic> json){
     return Files(
-      files: json['files'],
-      toOpen: false,
+      files: json['listPhotos'],
     );
   }
 }

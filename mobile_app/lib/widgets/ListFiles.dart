@@ -9,9 +9,7 @@ import '../classes/FileHelpers.dart';
 
 class ListFiles extends StatefulWidget {
   List<File> files;
-  bool toOpen;
-
-  ListFiles({required List<File> this.files, required bool this.toOpen});
+  ListFiles({required List<File> this.files});
 
   @override
   _ListFilesState createState() => _ListFilesState();
@@ -22,7 +20,6 @@ class _ListFilesState extends State<ListFiles> {
   String httpURL = "https://jsonplaceholder.typicode.com/albums";
   Widget build(BuildContext screenContext) {
     List<File> listFiles = this.widget.files;
-    bool toOpen = this.widget.toOpen;
     List<String> stringFiles = [];
     stringFiles = listFiles.map((file) => FileHelpers.getFileName(file.path)).toList();
 
@@ -35,18 +32,7 @@ class _ListFilesState extends State<ListFiles> {
             Container(
               child: GestureDetector(
                 onTap: () => {
-                  // function to open instead of sending to api
-                  if(toOpen){
-                    OpenFile.open(listFiles[i].path)
-                  } else {
-                    // code for sending file instead of
-                    /*
-                      - sending file
-                      - receiving file
-                    */
-                    sendJSON(listFiles[i])
-
-                  }
+                  OpenFile.open(listFiles[i].path)
                 },
                 child: Text(stringFiles[i])
               ),
@@ -63,25 +49,4 @@ class _ListFilesState extends State<ListFiles> {
       }
     );
   }
-  Future<Files> sendJSON(File file) async {
-    final response = await http.post(
-      Uri.parse(httpURL),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, File>{
-        'file': file,
-      }),
-    );
-    if (response.statusCode == 201) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
-      return Files.fromJson(jsonDecode(response.body));
-    } else {
-      // If the server did not return a 201 CREATED response,
-      // then throw an exception.
-      throw Exception('Failed to create album.');
-    }
-  }
-
 }
