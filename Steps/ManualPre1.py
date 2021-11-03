@@ -14,7 +14,7 @@ botLpt = (0, 5055)
 botRpt = (2985, 4167)
 
 imageNameInput = "redundancyleft"
-imageNameOutput = "step1redundancyfront"=
+imageNameOutput = "step1redundancyfront"
 
 def empty():
     pass

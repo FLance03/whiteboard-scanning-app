@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/screens/Photos.dart';
+import 'package:mobile_app/screens/Files.dart';
 
 import 'screens/screens.dart';
 
@@ -36,6 +37,11 @@ RouteFactory _routes() {
       case '/photos':
         screen = Photos(
           files: arguments['photos'],
+        );
+        break;
+      case '/files':
+        screen = Files(
+          files: arguments['files'],
         );
         break;
       default:

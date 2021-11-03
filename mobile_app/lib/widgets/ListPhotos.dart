@@ -23,7 +23,7 @@ class _ListPhotosState extends State<ListPhotos> {
     List<List<int>> uniqueDates = FileHelpers.getUniqueDates(
       this.widget.photos.map((photo) => FileHelpers.getFileName(photo.path)).toList()
     );
-    
+
     return  ListView.builder(
       itemCount: uniqueDates.length,
       itemBuilder: (BuildContext context, int i) {
