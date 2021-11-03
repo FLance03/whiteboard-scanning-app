@@ -7,9 +7,11 @@ import '../classes/FileHelpers.dart';
 
 class Photos extends StatelessWidget {
   List<File> photos;
-  Photos({required List<File> files}):
+  bool toOpen;
+  Photos({required List<File> files, required bool toOpen}):
     // Sort by filename in descending order
-    this.photos = FileHelpers.sortByFileName(files);
+    this.photos = FileHelpers.sortByFileName(files),
+    this.toOpen = toOpen;
   
   @override
   Widget build(BuildContext context) {
@@ -19,6 +21,7 @@ class Photos extends StatelessWidget {
       ),
       body: ListPhotos(
         photos: this.photos,
+        toOpen: this.toOpen,
       )
     );
   }

@@ -5,6 +5,16 @@ import 'dart:io';
 
 import '../classes/FileHelpers.dart';
 
+/*
+kp flutter (future builder, circular progress indicator)
+server takes the file, server gives it to python, server waits for python word output
+flutter:
+- user picks photos and use json and uploads it to server
+- after receiving the word file, it saves the word file to its designated folder
+- Put a screen that freezes app before downloading
+
+*/
+
 class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -29,14 +39,20 @@ class Home extends StatelessWidget {
             const SizedBox(height: 10),
             ElevatedButton(
               style: style,
-              onPressed: () => _photos(context),
+              onPressed: () => _photos(context, false),
               child: Text('Existing photos'),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
               style: style,
-              onPressed: () => _file(context),
+              onPressed: () => _file(context, false),
               child: Text('Existing files'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: style,
+              onPressed: () => _file(context, true),
+              child: Text('Process Photos'),
             ),
           ],
         ),
@@ -47,7 +63,7 @@ class Home extends StatelessWidget {
   void _camera(BuildContext context) {
     Navigator.pushNamed(context, '/camera');
   }
-  void _photos(BuildContext context) async {
+  void _photos(BuildContext context, bool toOpen) async {
     final directory = await getExternalStorageDirectory();
     final imagePath = '${directory!.path}/photos' ;
     final imageDir = await new Directory(imagePath).create();
@@ -56,21 +72,22 @@ class Home extends StatelessWidget {
       context, 
       '/photos', 
       arguments: {
-        'photos': await FileHelpers.dirContents(imageDir)
+        'photos': await FileHelpers.dirContents(imageDir),
+        'toOpen': toOpen
       }
     );
   }
-  void _file(BuildContext context) async {
+  void _file(BuildContext context, bool toOpen) async {
     final directory = await getExternalStorageDirectory();
     final filePath = '${directory!.path}/Files';
     final fileDir = await new Directory(filePath).create();
     print(await FileHelpers.dirContents(fileDir));
-    print("fuck");
     Navigator.pushNamed(
       context, 
       '/files', 
       arguments: {
-        'files': await FileHelpers.dirContents(fileDir)
+        'files': await FileHelpers.dirContents(fileDir),
+        'toOpen': toOpen
       }
     );
   }

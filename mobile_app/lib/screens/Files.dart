@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'dart:convert';
 
 import '../widgets/ListFiles.dart';
 import '../classes/FileHelpers.dart';
 
 class Files extends StatelessWidget {
   List<File> files;
-  Files({required List<File> files}):
+  bool toOpen;
+
+  Files({required List<File> files, required bool toOpen}):
     // Sort by filename in descending order
-    this.files = FileHelpers.sortByFileName(files);
+    this.files = FileHelpers.sortByFileName(files),
+    this.toOpen = toOpen;
   
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,15 @@ class Files extends StatelessWidget {
       ),
       body: ListFiles( // make a listFiles.dart
         files: this.files,
+        toOpen: this.toOpen
       )
+    );
+  }
+
+  factory Files.fromJson(Map<String, dynamic> json){
+    return Files(
+      files: json['files'],
+      toOpen: false,
     );
   }
 }

@@ -37,11 +37,13 @@ RouteFactory _routes() {
       case '/photos':
         screen = Photos(
           files: arguments['photos'],
+          toOpen: arguments['toOpen']
         );
         break;
       case '/files':
         screen = Files(
           files: arguments['files'],
+          toOpen: arguments['toOpen'],
         );
         break;
       default:
