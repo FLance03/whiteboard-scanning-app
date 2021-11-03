@@ -885,12 +885,15 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyCol
                     pastImgInd += 1
             currentImgInd += 1
         weights = np.array(weights)
-        testing.Summarize(weights)
-        print(len(weights))
-        print(len(redundantHeap))
+        # testing.Summarize(weights)
         absMed = weights - np.median(weights)
         IQR = np.percentile(absMed, 75) - np.percentile(absMed, 25)
         THRESHOLD1 = np.median(weights) * 1.5
+        # THRESHOLD1 = np.median(weights) + IQR * 1.5
+        print('Max: ', np.max(weights))
+        print('Median * 1.5: ', np.median(weights) * 1.5)
+        print('Median * 2: ', np.median(weights) * 2)
+        print('Median + IQR * 1.5: ', np.median(weights) + IQR * 1.5)
         print('THRESH: ', THRESHOLD1)
         imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
                                        type2Archives[-1], currentRedundancyColorer, currentImgFeatures, THRESHOLD1)
@@ -932,7 +935,6 @@ for i in range(numImgs):
     for j in range(numImgs):
         if i != j:
             redundancyCombs[i, j] = combinations.index(tuple(sorted([i, j]))) + 1
-print(redundancyCombs)
 # imgNum and enumerate only for testing (delete after)
 for imgNum, img in enumerate(testImages):
     file = np.load(img + '.npz')
@@ -941,7 +943,6 @@ for imgNum, img in enumerate(testImages):
             'phraseLabels'], file['nonTextLabels']
     imgsPhraseLabels.append(phraseLabels)
     imgsNonTextLabels.append(nonTextLabels)
-    print(phraseLabels.shape)
     assert phraseLabels.shape == nonTextLabels.shape
     maxHeight = max(maxHeight, phraseLabels.shape[0])
     maxWidth = max(maxWidth, phraseLabels.shape[1])
