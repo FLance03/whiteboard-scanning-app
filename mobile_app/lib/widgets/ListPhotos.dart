@@ -23,7 +23,7 @@ class _ListPhotosState extends State<ListPhotos> {
   List<File> selectedPhotos = [];
   double picPadding = 0.0;
   int picsPerRow = 4;
-  String serverURL = 'http://10.0.2.2:15024';
+  String serverURL = 'http://192.168.0.13:15024';
 
   @override
   Widget build(BuildContext screenContext) {

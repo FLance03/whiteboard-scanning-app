@@ -27,7 +27,6 @@ class FileHelpers {
     for (int i=0 ; i < 7 ; i++) {
       nameParts[i] = '${addZeros[4 - nameParts[i].length]}${nameParts[i]}';
     }
-    print(nameParts);
     // yyyy-mm-dd-hh-mm-ss-mss
     return '${nameParts[0]}-${nameParts[1].substring(2)}-${nameParts[2].substring(2)}' +
             '-${nameParts[3].substring(2)}-${nameParts[4].substring(2)}-${nameParts[5].substring(2)}' +
@@ -39,7 +38,6 @@ class FileHelpers {
   }
   static List<List<int>> getUniqueDates(List<String> fileNames) {
     List<String> mimic = List.from(fileNames)..sort((a, b) => b.compareTo(a));
-    print(mimic);
     List<List<int>> uniqueDates = [];
     Map<String, int> currentDate = {
       'year': 0, 'month': 0, 'day': 0
