@@ -48,12 +48,6 @@ class Home extends StatelessWidget {
               onPressed: () => _file(context),
               child: Text('Existing files'),
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              style: style,
-              onPressed: () => _photos(context),
-              child: Text('Process Photos'),
-            ),
           ],
         ),
       ),
