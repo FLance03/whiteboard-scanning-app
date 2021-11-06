@@ -16,7 +16,7 @@ import math
 # - Modify perspective transform so that it works with values outside the width and height of an image (Because houghline equation gives values outside image height and wwidth)
 # - Try to make a buffer in the middle line
 
-def Preprocessing1(img, ImageNameOutput):
+def Preprocessing1(img):
     # Values for Houghlines here
     threshold = 800
     lines = 0
