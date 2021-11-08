@@ -38,6 +38,7 @@ class TakePictureScreen extends StatefulWidget {
   TakePictureScreenState createState() => TakePictureScreenState();
 }
 class TakePictureScreenState extends State<TakePictureScreen> {
+  int numPics = 0;
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
 
@@ -55,10 +56,19 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a picture')),
-      // You must wait until the controller is initialized before displaying the
-      // camera preview. Use a FutureBuilder to display a loading spinner until the
-      // controller has finished initializing.
+      appBar: AppBar(
+        title: const Text('Take a picture'),
+        actions: [
+          this.numPics == 0 ? SizedBox() : IconButton(
+            icon: Icon(Icons.file_upload),
+            onPressed: () async {
+              List<File> sendPhotos = await getCurrentGroupedPhotos();
+              print(sendPhotos.map((file) => FileHelpers.getFileName(file.path)));
+              // Here
+            },
+          )
+        ]
+      ),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -89,14 +99,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             print(fileName);
             final newFile = File('$imagePath/$fileName.jpg');
             newFile.writeAsBytes(await image.readAsBytes());
-
-            // await Navigator.of(context).push(
-            //   MaterialPageRoute(
-            //     builder: (context) => DisplayPictureScreen(
-            //       imagePath: image.path,
-            //     ),
-            //   ),
-            // );
+            setState(() {
+              numPics++;
+            });
           } catch (e) {
             print(e);
           }
@@ -105,19 +110,14 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ),
     );
   }
-}
-// Widget to display the picture taken by the user.
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
+  Future<List<File>> getCurrentGroupedPhotos() async {
+    final directory = await getExternalStorageDirectory();
+    final imagePath = '${directory!.path}/photos' ;
+    final imageDir = await new Directory(imagePath).create();
+    List<File> photos = await FileHelpers.dirContents(imageDir);
 
-  const DisplayPictureScreen({Key? key, required this.imagePath})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
-      body: Image.file(File(imagePath)),
-    );
+    photos = FileHelpers.sortByFileName(photos, reverse: true);
+    return photos.take(numPics).toList();
   }
 }
+// Widget to display the picture taken by the user.

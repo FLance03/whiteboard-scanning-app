@@ -41,6 +41,8 @@ def FullPrint2(filename, *args, **kwargs):
   np.set_printoptions(**opt)
 
 def imshow_components(labels):
+    if np.max(labels) == 0:
+        return labels.astype(np.uint8)
     # Map component labels to hue val
     label_hue = np.uint8(179*labels/np.max(labels))
     blank_ch = 255*np.ones_like(label_hue)

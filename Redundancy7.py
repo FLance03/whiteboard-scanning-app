@@ -111,16 +111,21 @@ def GetWeight(redundancyMatrix):
             rightInd += 1
         # Since we need to remember where we left off on rightInd, traverse the rest of array using another variable
         travRightInd = rightInd
+        top, bottom = len(redundancyMatrix), 0
         while travRightInd < len(labelsInfo):
             # It may happen that the right end point is within the current offsets to be checked but the
             #    left end point is not so only include in sum when the below condition is true
             if rightSort[travRightInd, 0] >= leftSort[leftInd, 0]:
                 sum += labelWeights[rightSort[travRightInd, 10]]
+                top = min(top, leftSort[leftInd, 2], rightSort[travRightInd, 2])
+                bottom = max(bottom, leftSort[leftInd, 3], rightSort[travRightInd, 3])
+                height = bottom - top + 1
                 # Every time the sum runs, compare computed weights
                 # The sum (each operand in the sum was squared) is divided by the area/num of pixels taken
                 numZerosPunish = max(np.sqrt(np.count_nonzero(redundancyMatrix[:, leftSort[leftInd, 0]:rightSort[travRightInd, 1] + 1]))
                                      , 1)
-                weight = sum / (np.sqrt((rightSort[travRightInd, 1] - leftSort[leftInd, 0] + 1) * len(redundancyMatrix)) + numZerosPunish)
+                # print(height)
+                weight = sum / (np.sqrt((rightSort[travRightInd, 1] - leftSort[leftInd, 0] + 1) * height) + numZerosPunish)
                 #print('Count:         ', np.sqrt((rightSort[travRightInd, 1] - leftSort[leftInd, 0] + 1) * len(redundancyMatrix)), numZerosPunish)
                 weight /= numZerosPunish
                 if weight > retVal['weight']:
@@ -795,6 +800,7 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
             break
         hasMatched = [matchedLabels[imgNum, currentImgInd] != -1,
                         matchedLabels[pastImgNum, pastImgInd] != -1]
+        # testing.ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, winner, COL_WINDOW_SIZE, COL_OVERLAP_SIZE)
         if True in hasMatched:
             matchedInds = hasMatched.index(True)
             if matchedInds == 0 and hasMatched[1]:
@@ -919,7 +925,7 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyCol
         # #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
 
 
-testImages = ['1f', '2f', '3f', '4f', '6f']
+testImages = ['1s', '2s', '3s', '4s', '5s', '6s']
 maxWidth = 0
 maxHeight = 0
 imgsFeatures = []

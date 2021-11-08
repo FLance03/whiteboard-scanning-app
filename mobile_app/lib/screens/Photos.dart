@@ -13,7 +13,7 @@ class Photos extends StatelessWidget {
   List<File> photos;
   Photos({required List<File> files}):
     // Sort by filename in descending order
-    this.photos = FileHelpers.sortByFileName(files);
+    this.photos = FileHelpers.sortByFileName(files, reverse: true);
   
   @override
   Widget build(BuildContext context) {

@@ -67,7 +67,6 @@ class Home extends StatelessWidget {
     final directory = await getExternalStorageDirectory();
     final imagePath = '${directory!.path}/photos' ;
     final imageDir = await new Directory(imagePath).create();
-    print(await FileHelpers.dirContents(imageDir));
     Navigator.pushNamed(
       context, 
       '/photos', 

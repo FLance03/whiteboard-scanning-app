@@ -11,7 +11,7 @@ from testing import testing
 np.seterr(all='raise')
 startTime = time()
 
-testImages = ['1f', '2f', '3f', '4f', '6f']
+testImages = ['1s', '2s', '3s', '4s', '5s', '6s']
 anded = []
 for ind, testImage in enumerate(testImages):
     img = cv.imread('./testing/pics and texts/Group Tests Step1/2/' + testImage + '.jpg')

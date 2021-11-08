@@ -56,9 +56,13 @@ class FileHelpers {
     }
     return uniqueDates;
   }
-  static List<File> sortByFileName(List<File> files) {
+  static List<File> sortByFileName(List<File> files, {bool reverse = false}) {
     List<File> mimic = List.from(files);
-    return mimic..sort((a, b) => getFileName(b.path).compareTo(getFileName(a.path)));
+    if (reverse) {
+      return mimic..sort((a, b) => getFileName(b.path).compareTo(getFileName(a.path)));
+    }else {
+      return mimic..sort((a, b) => getFileName(a.path).compareTo(getFileName(b.path)));
+    }
   }
   static List<int> getDateTimes(String fileName) {
     List<String> infos = fileName.split('-');
