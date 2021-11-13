@@ -2,13 +2,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_app/screens/Photos.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as Path;
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'dart:io';
 import 'dart:convert';
 
 import '../classes/FileHelpers.dart';
+import '../classes/sendPhotos.dart';
 
 class ListPhotos extends StatefulWidget {
   List<File> photos;
@@ -31,7 +32,7 @@ class _ListPhotosState extends State<ListPhotos> {
       this.widget.photos.map((photo) => FileHelpers.getFileName(photo.path)).toList()
     );
     print(selectedPhotos);
-    return  Column(
+    return Column(
       children: [
         Expanded(
           flex: 9,
@@ -104,10 +105,10 @@ class _ListPhotosState extends State<ListPhotos> {
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: ElevatedButton(
-                  onPressed: () {
-                    sendJson(selectedPhotos);
-                  },
                   child: Text('Submit'),
+                  onPressed: () {
+                    SendPhotos().sendFiles(context, selectedPhotos);
+                  },
                 ),
               ),
             ],
@@ -116,40 +117,6 @@ class _ListPhotosState extends State<ListPhotos> {
       ],
     );
   }
-  Future sendJson(List<File> selectedPhotos) async {
-    List<Uint8List> imageBytes = [];
-    List<String> base64String = [];
-    // from files to uint8list to base64
-    selectedPhotos.forEach((photos) => imageBytes.add(photos.readAsBytesSync()));
-    imageBytes.forEach((image) => base64String.add(base64Encode(image)));
-    final response = await http.post(
-      Uri.parse(serverURL),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, List<String>>{
-        'img': base64String,
-      }),
-    );
-
-    // put what to do with response code here
-    print(response);
-    if (response.statusCode == 201) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
-      print(response);
-      // return Files.fromJson(jsonDecode(response.body));
-    } else {
-      // If the server did not return a 201 CREATED response,
-      // then throw an exception.
-      throw Exception('Failed to create album.');
-    }
-  }
-
-  // void serverIO(List<File> selectedPhotos) async{
-  //   final response = await sendJson(selectedPhotos);
-  //   // put code here to write a file
-  // }
 
   String FormatYearMonthDay({required int year, required int month, required int day}) {
     List<String> months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',

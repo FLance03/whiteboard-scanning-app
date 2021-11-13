@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'dart:async';
 import 'dart:io';
 
+import '../classes/SendPhotos.dart';
 import '../classes/FileHelpers.dart';
 
 class Camera extends StatelessWidget {
@@ -59,11 +60,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       appBar: AppBar(
         title: const Text('Take a picture'),
         actions: [
-          this.numPics == 0 ? SizedBox() : IconButton(
+          this.numPics == 0 ? SizedBox():
+            IconButton(
             icon: Icon(Icons.file_upload),
             onPressed: () async {
-              List<File> sendPhotos = await getCurrentGroupedPhotos();
-              print(sendPhotos.map((file) => FileHelpers.getFileName(file.path)));
+              List<File> selectedPhotos = await getCurrentGroupedPhotos();
+              print(selectedPhotos.map((file) => FileHelpers.getFileName(file.path)));
+              SendPhotos().sendFiles(context, selectedPhotos);
               // Here
             },
           )

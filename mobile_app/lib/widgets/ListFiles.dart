@@ -23,7 +23,7 @@ class _ListFilesState extends State<ListFiles> {
     List<String> stringFiles = [];
     stringFiles = listFiles.map((file) => FileHelpers.getFileName(file.path)).toList();
 
-    return  ListView.builder(
+    return ListView.builder(
       itemCount: stringFiles.length,
       itemBuilder: (BuildContext context, int i) {
         return Column(
@@ -32,6 +32,7 @@ class _ListFilesState extends State<ListFiles> {
             Container(
               child: GestureDetector(
                 onTap: () => {
+                  // here
                   OpenFile.open(listFiles[i].path)
                 },
                 child: Text(stringFiles[i])

@@ -8,7 +8,7 @@ import '../widgets/ListFiles.dart';
 import '../classes/FileHelpers.dart';
 
 class Files extends StatelessWidget {
-  List<File> files;
+  final List<File> files;
   Files({required List<File> files}):
     // Sort by filename in descending order
     this.files = FileHelpers.sortByFileName(files);

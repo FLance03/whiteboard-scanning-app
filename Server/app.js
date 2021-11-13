@@ -11,9 +11,9 @@ app.use(express.json({
 
 // app.use(express.json()) 
 app.post('/', async function(req, res)  {
-    // console.log('Hi');
+    console.log('Hi');
     var base64Img = req.body.img;
-    // console.log(base64Img);
+    console.log(base64Img);
     for (var i = 0 ; i < base64Img.length ; i++) {
         fs.writeFileSync(`input${i}.jpg`,req.body.img[i], {encoding: 'base64'});
     }
@@ -28,7 +28,11 @@ app.post('/', async function(req, res)  {
     });
 });
 
+app.get('/', function(req, res){
+    console.log('get works');
+});
+
 app.listen('15024', function(err) {
     if (err) throw err;
-    console.log('Listing at port 15024');
+    console.log('Listening at port 15024');
 })
