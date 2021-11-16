@@ -131,27 +131,23 @@ class _ListPhotosState extends State<ListPhotos> {
       images.add(
         GestureDetector(
           onTap: () {
-            String fileName = FileHelpers.getFileName(photos[i].path);
-            if (this.selectedPhotos.indexWhere(
-              (photo) => FileHelpers.getFileName(photo.path) == fileName) == -1
-            ){
-              // Photo selected
+            if (fileIsSelected(photos[i].path)){
+              // Deselect the photo
+              setState(() {
+                this.selectedPhotos.removeWhere(
+                  (photo) => FileHelpers.getFileName(photo.path) == FileHelpers.getFileName(photos[i].path));
+              });
+            }else {
+              // Select the photo
               setState(() {
                 this.selectedPhotos.add(photos[i]);
               });
-            }else {
-              // Photo deselected
-              setState(() {
-                this.selectedPhotos.removeWhere(
-                  (photo) => FileHelpers.getFileName(photo.path) == fileName);
-              });
             }
           },
-          child: Container(
+          child: fileIsSelected(photos[i].path)
+          ? Container(
             // Put border if selected (contained in this.selectedPhotos)
-            decoration: this.selectedPhotos.indexWhere(
-              (photo) => FileHelpers.getFileName(photo.path) == FileHelpers.getFileName(photos[i].path)) != -1
-            ? BoxDecoration(
+            decoration: BoxDecoration(
               border: Border.all(
                 width: 5.0,
                 color: Colors.green[200] as Color,
@@ -159,16 +155,26 @@ class _ListPhotosState extends State<ListPhotos> {
               borderRadius: BorderRadius.all(
                   Radius.circular(5.0),
               ),
-            )
-            : BoxDecoration(),
+            ),
+            child: Image.file(
+              photos[i],
+              width: widthPerPic - 10,
+            ),
+          )
+          : Container(
             child: Image.file(
               photos[i],
               width: widthPerPic,
             ),
-          ),
+          )
         )
       );
     }
     return images;
+  }
+  bool fileIsSelected(String path) {
+    String fileName = FileHelpers.getFileName(path);
+    return this.selectedPhotos.indexWhere(
+              (photo) => FileHelpers.getFileName(photo.path) == fileName) != -1;
   }
 }

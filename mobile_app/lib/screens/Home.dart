@@ -58,27 +58,20 @@ class Home extends StatelessWidget {
     Navigator.pushNamed(context, '/camera');
   }
   void _photos(BuildContext context) async {
-    final directory = await getExternalStorageDirectory();
-    final imagePath = '${directory!.path}/photos' ;
-    final imageDir = await new Directory(imagePath).create();
     Navigator.pushNamed(
       context, 
       '/photos', 
       arguments: {
-        'photos': await FileHelpers.dirContents(imageDir),
+        'photos': await FileHelpers.dirContents(await FileHelpers.getDirectoryFromFolder('Photos')),
       }
     );
   }
   void _file(BuildContext context) async {
-    final directory = await getExternalStorageDirectory();
-    final filePath = '${directory!.path}/Files';
-    final fileDir = await new Directory(filePath).create();
-    print(await FileHelpers.dirContents(fileDir));
     Navigator.pushNamed(
       context, 
       '/files', 
       arguments: {
-        'files': await FileHelpers.dirContents(fileDir),
+        'files': await FileHelpers.dirContents(await FileHelpers.getDirectoryFromFolder('Files')),
       }
     );
   }

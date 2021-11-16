@@ -829,7 +829,7 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
     return imgsFeatures
 
 
-def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer):
+def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer):
     global redundancyCounter
     # imgsFeatures is a 3d array (not including the numpy arrays inside)
     redundantCC = []
@@ -924,96 +924,79 @@ def main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyCol
         #     cv.imshow('Drawer: ' + str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
         # #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
 
+def main(imgsLabels):
+    maxWidth = 0
+    maxHeight = 0
+    imgsFeatures = []
+    imgsPhraseLabels = []
+    imgsNonTextLabels = []
+    currentRedundancyColorer = []
+    pastRedundancyColorer = []
+    redundancyDrawer = []
+    numImgs = len(imgsLabels)
+    combinations = sorted(list(comb(range(numImgs), 2)))
+    redundancyCombs = np.empty((numImgs, numImgs), dtype=np.uint8)
+    for i in range(numImgs):
+        for j in range(numImgs):
+            if i != j:
+                redundancyCombs[i, j] = combinations.index(tuple(sorted([i, j]))) + 1
+    # imgNum and enumerate only for testing (delete after)
+    for imgNum, imgLabels in enumerate(imgsLabels):
+        labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = imgLabels
+        imgsPhraseLabels.append(phraseLabels)
+        imgsNonTextLabels.append(nonTextLabels)
+        assert phraseLabels.shape == nonTextLabels.shape
+        maxHeight = max(maxHeight, phraseLabels.shape[0])
+        maxWidth = max(maxWidth, phraseLabels.shape[1])
+        redundancyDrawer.append(np.where(np.logical_or(phraseLabels!=0, nonTextLabels!=0), 255, 0))
+        imgFeatures = []
+        for ctr in range(2):
+            currentLabels = phraseLabels if ctr==0 else nonTextLabels
+            labelsInfo = Step5.GetLabelsInfo(currentLabels)
+            # if imgNum == 1 and ctr == 1:
+            #     cv.imshow('see', np.where(currentLabels == 1, 255, 0).astype(np.uint8))
+            #     cv.waitKey()
+            for ind, labelInfo in enumerate(labelsInfo):
+                imgFeatures.append({})
+                imgFeatures[-1]['labelNum'] = ind + 1
+                imgFeatures[-1]['type'] = 'phrase' if ctr==0 else 'nonText'
+                left, right, top, bottom = labelInfo[:4]
+                imgFeatures[-1]['img'] = np.where(currentLabels[top:bottom+1, left:right+1] == ind + 1, ind + 1, 0)
+                imgFeatures[-1]['origImg'] = np.zeros((*imgFeatures[-1]['img'].shape, 3), dtype=np.uint16)
+                # Record the imgNum, the row in that imgNum (based on the whole image), and the col in that imgNum
+                imgFeatures[-1]['origImg'][:, :, 0] = imgNum
+                imgFeatures[-1]['origImg'][:, :, 1] = np.arange(top, bottom+1)[:, np.newaxis]
+                imgFeatures[-1]['origImg'][:, :, 2] = np.arange(left, right+1)[np.newaxis, :]
+                # Include top as the first element of each row.
+                # top will be used to identify the possible CCs to compare
+                # imgFeatures will also be sorted by top later
+                imgFeatures[-1]['top'] = top
+                width, area = labelInfo[7], labelInfo[9]
+                imgFeatures[-1]['minHeight'] = top - ((1 - MINHEIGHTPROP) * area // width)
 
-testImages = ['1s', '2s', '3s', '4s', '5s', '6s']
-maxWidth = 0
-maxHeight = 0
-imgsFeatures = []
-imgsPhraseLabels = []
-imgsNonTextLabels = []
-currentRedundancyColorer = []
-pastRedundancyColorer = []
-redundancyDrawer = []
-numImgs = len(testImages)
-combinations = sorted(list(comb(range(numImgs), 2)))
-redundancyCombs = np.empty((numImgs, numImgs), dtype=np.uint8)
-for i in range(numImgs):
-    for j in range(numImgs):
-        if i != j:
-            redundancyCombs[i, j] = combinations.index(tuple(sorted([i, j]))) + 1
-# imgNum and enumerate only for testing (delete after)
-for imgNum, img in enumerate(testImages):
-    file = np.load(img + '.npz')
-    labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = \
-        file['labels'], file['labelsInfo'], file['textLabels'], file['wordLabels'], file[
-            'phraseLabels'], file['nonTextLabels']
-    imgsPhraseLabels.append(phraseLabels)
-    imgsNonTextLabels.append(nonTextLabels)
-    assert phraseLabels.shape == nonTextLabels.shape
-    maxHeight = max(maxHeight, phraseLabels.shape[0])
-    maxWidth = max(maxWidth, phraseLabels.shape[1])
-    redundancyDrawer.append(np.where(np.logical_or(phraseLabels!=0, nonTextLabels!=0), 255, 0))
-    imgFeatures = []
-    for ctr in range(2):
-        currentLabels = phraseLabels if ctr==0 else nonTextLabels
-        labelsInfo = Step5.GetLabelsInfo(currentLabels)
-        # if imgNum == 1 and ctr == 1:
-        #     cv.imshow('see', np.where(currentLabels == 1, 255, 0).astype(np.uint8))
-        #     cv.waitKey()
-        for ind, labelInfo in enumerate(labelsInfo):
-            imgFeatures.append({})
-            imgFeatures[-1]['labelNum'] = ind + 1
-            imgFeatures[-1]['type'] = 'phrase' if ctr==0 else 'nonText'
-            left, right, top, bottom = labelInfo[:4]
-            imgFeatures[-1]['img'] = np.where(currentLabels[top:bottom+1, left:right+1] == ind + 1, ind + 1, 0)
-            imgFeatures[-1]['origImg'] = np.zeros((*imgFeatures[-1]['img'].shape, 3), dtype=np.uint16)
-            # Record the imgNum, the row in that imgNum (based on the whole image), and the col in that imgNum
-            imgFeatures[-1]['origImg'][:, :, 0] = imgNum
-            imgFeatures[-1]['origImg'][:, :, 1] = np.arange(top, bottom+1)[:, np.newaxis]
-            imgFeatures[-1]['origImg'][:, :, 2] = np.arange(left, right+1)[np.newaxis, :]
-            # Include top as the first element of each row.
-            # top will be used to identify the possible CCs to compare
-            # imgFeatures will also be sorted by top later
-            imgFeatures[-1]['top'] = top
-            width, area = labelInfo[7], labelInfo[9]
-            imgFeatures[-1]['minHeight'] = top - ((1 - MINHEIGHTPROP) * area // width)
+                # Assert that currentLabels does not have any other position with the label number ind+1 other
+                #    than what is inside the given rectangle
+                checkLabels = currentLabels.copy()
+                checkLabels[top:bottom+1, left:right+1] = 0
+                assert len(checkLabels[checkLabels == ind+1]) == 0
 
-            # Assert that currentLabels does not have any other position with the label number ind+1 other
-            #    than what is inside the given rectangle
-            checkLabels = currentLabels.copy()
-            checkLabels[top:bottom+1, left:right+1] = 0
-            assert len(checkLabels[checkLabels == ind+1]) == 0
-
-            # Indexing currentLabels is not exactly required by Step6.main() but since inside it, the currentLabels is
-            #    again filtered out to only include the ind+1 label and further getting the info of such label (for a general
-            #    case instead of passing labelInfo as another parameter), reducing the search space may improve performance
-            # Array is also not modified in Step6.main() since it uses np.where at the onset
-            # ind + 1 since Step5.GetLabelsInfo() does not include label 0 thus, label 1 has index zero as info
-            features = Step6.main(currentLabels[top:bottom+1, left:right+1], ind+1)[0]
-            imgFeatures[-1]['info'] = labelInfo
-            imgFeatures[-1]['features'] = features
-    # Base the sorting on the first element (data about top position) of each row
-    imgsFeatures.append(sorted(imgFeatures, key=lambda row:row['top']))
-for ind, img in enumerate(redundancyDrawer):
-    redundancyDrawer[ind] = np.pad(img, [(0, maxHeight-img.shape[0]), (0, maxWidth-img.shape[1])],
-                                  mode='constant', constant_values=0)
-redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
-currentRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
-startTime = time()
-print(time() - startTime)
-currentRedundancyColorer = np.array(currentRedundancyColorer)
-redundancyCounter = 2
-main(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer)
-# phraseLabelsInfo = Step5.GetLabelsInfo(phraseLabels)
-# features = Step6.main(phraseLabels, phraseLabelsInfo[0], 1)
-# testing.FullPrint(features)
-
-# cv.imshow('Labels', testing.imshow_components(labels))
-# cv.imshow('Labels2', testing.imshow_components(np.where(phraseLabels == 1, phraseLabels, 0)))
-# cv.imshow('Texts', testing.imshow_components(textLabels))
-# cv.imshow('Words', testing.imshow_components(wordLabels))
-# cv.imshow('Phrases', testing.imshow_components(phraseLabels))
-# cv.imshow('Non Texts', testing.imshow_components(nonTextLabels))
-#
+                # Indexing currentLabels is not exactly required by Step6.main() but since inside it, the currentLabels is
+                #    again filtered out to only include the ind+1 label and further getting the info of such label (for a general
+                #    case instead of passing labelInfo as another parameter), reducing the search space may improve performance
+                # Array is also not modified in Step6.main() since it uses np.where at the onset
+                # ind + 1 since Step5.GetLabelsInfo() does not include label 0 thus, label 1 has index zero as info
+                features = Step6.main(currentLabels[top:bottom+1, left:right+1], ind+1)[0]
+                imgFeatures[-1]['info'] = labelInfo
+                imgFeatures[-1]['features'] = features
+        # Base the sorting on the first element (data about top position) of each row
+        imgsFeatures.append(sorted(imgFeatures, key=lambda row:row['top']))
+    for ind, img in enumerate(redundancyDrawer):
+        redundancyDrawer[ind] = np.pad(img, [(0, maxHeight-img.shape[0]), (0, maxWidth-img.shape[1])],
+                                      mode='constant', constant_values=0)
+    redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
+    currentRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
+    currentRedundancyColorer = np.array(currentRedundancyColorer)
+    redundancyCounter = 2
+    return ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer)
 cv.waitKey()
 cv.destroyAllWindows()

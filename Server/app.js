@@ -24,6 +24,7 @@ app.post('/', async function(req, res)  {
         // res.download(`${__dirname}/../output.docx`, 'output.docx');
         console.log(output);
         res.status(201);
+	console.log('DONE!!');
         res.send(output);
     });
 });

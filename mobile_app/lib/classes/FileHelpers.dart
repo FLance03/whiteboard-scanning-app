@@ -1,10 +1,16 @@
-import 'dart:math';
-
+import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'dart:math';
 import 'dart:async';
 import 'dart:io';
 
 class FileHelpers {
+  static Future<Directory> getDirectoryFromFolder(String folderName) async {
+    final directory = await getExternalStorageDirectory();
+    final filePath = '${directory!.path}/$folderName';
+    final fileDir = await new Directory(filePath).create();
+    return fileDir;
+  }
   static Future<List<File>> dirContents(Directory dir) {
     var files = <File>[];
     var completer = Completer<List<File>>();

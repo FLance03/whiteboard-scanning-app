@@ -3,9 +3,12 @@ from time import time
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
-from Steps import (SaturationAndOutlier2 as Step2,
+from Steps import (Preprocessing1 as Step1,
+                   SaturationAndOutlier2 as Step2,
                    ConnectedComponentGrouping5 as Step5,
-                   FeatureExtraction6 as Step6)
+                   FeatureExtraction6 as Step6,
+                   Redundancy7 as Step7
+                   ConvertToDocx)
 from testing import testing
 
 np.seterr(all='raise')
@@ -16,6 +19,7 @@ anded = []
 for ind, testImage in enumerate(testImages):
     img = cv.imread('./testing/pics and texts/Group Tests Step1/2/' + testImage + '.jpg')
     assert img is not None
+    img = Step1.Preprocessing1(img)
     img = Step2.main(img)
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -24,11 +28,12 @@ for ind, testImage in enumerate(testImages):
     bw = bw[15:-15]
     # anded.append(np.where(bw == 0, 1, 0))
     # cv.imshow(str(ind + 1), bw)
+    imgsLabels = []
     # Remove the possible lines from the blackboard edges
-    labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = Step5.main(bw)
+    # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
+    imgsLabels.append(Step5.main(bw))
+    Step7.main(imgsLabels)
 
-    np.savez(testImage + '.npz', labels=labels, labelsInfo=labelsInfo, textLabels=textLabels,
-             wordLabels=wordLabels, phraseLabels=phraseLabels, nonTextLabels=nonTextLabels)
 print(time() - startTime)
 # cv.imshow('first second', np.where(np.bitwise_and(anded[0], anded[1]) == 1, 0, 255).astype(np.uint8))
 # cv.imshow('first third', np.where(np.bitwise_and(anded[0], anded[2]) == 1, 0, 255).astype(np.uint8))

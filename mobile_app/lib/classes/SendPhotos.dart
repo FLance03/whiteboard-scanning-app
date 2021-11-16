@@ -18,28 +18,22 @@ import '../screens/Home.dart';
 
 */
 class SendPhotos {
-  final serverURL = 'http://192.168.0.107:15024';
+  final serverURL = 'http://192.168.0.36:15024';
 
   void sendFiles(BuildContext context, List<File> selectedPhotos) async{
     OverlayEntry _overlayEntry = this._createOverlayEntry(context);
     Overlay.of(context)?.insert(_overlayEntry);
     // method to send files
     await sendJson(selectedPhotos);
-    // change screens
-    Navigator.pop(context);
     // not sure how to change screens without copy pasting exact same function from home
-    final directory = await getExternalStorageDirectory();
-    final filePath = '${directory!.path}/Files';
-    final fileDir = await new Directory(filePath).create();
-    print(await FileHelpers.dirContents(fileDir));
-    Navigator.pushNamed(
+    _overlayEntry.remove();
+    Navigator.popAndPushNamed(
       context, 
       '/files', 
       arguments: {
-        'files': await FileHelpers.dirContents(fileDir),
+        'files': await FileHelpers.dirContents(await FileHelpers.getDirectoryFromFolder('Files')),
       }
     );
-    _overlayEntry.remove();
   }
 
   OverlayEntry _createOverlayEntry(BuildContext context) {
