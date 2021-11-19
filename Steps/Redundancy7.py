@@ -904,10 +904,10 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
         imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
                                        type2Archives[-1], currentRedundancyColorer, currentImgFeatures, THRESHOLD1)
         testing.ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels)
-    retVal = [{'img': CC['img'], 'type': CC['type']} for pic in imgsFeatures for CC in pic]
+    retVal = [{'img': np.where(CC['img'] > 0, 0, 255).astype(np.uint8), 'type': CC['type']} for pic in imgsFeatures for CC in pic]
     for img in retVal:
         print(img['type'])
-        cv.imshow('img', testing.imshow_components(img['img'].astype(np.uint8)))
+        cv.imshow('img', img['img'].astype(np.uint8))
         cv.waitKey()
         cv.destroyAllWindows()
     return retVal
@@ -924,15 +924,17 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
         #     cv.imshow('Drawer: ' + str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
         # #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
 
+currentRedundancyColorer = []
+pastRedundancyColorer = []
+redundancyDrawer = []
+redundancyCounter = 2
 def main(imgsLabels):
+    global currentRedundancyColorer, redundancyDrawer, redundancyCounter
     maxWidth = 0
     maxHeight = 0
     imgsFeatures = []
     imgsPhraseLabels = []
     imgsNonTextLabels = []
-    currentRedundancyColorer = []
-    pastRedundancyColorer = []
-    redundancyDrawer = []
     numImgs = len(imgsLabels)
     combinations = sorted(list(comb(range(numImgs), 2)))
     redundancyCombs = np.empty((numImgs, numImgs), dtype=np.uint8)
@@ -996,7 +998,6 @@ def main(imgsLabels):
     redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
     currentRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
     currentRedundancyColorer = np.array(currentRedundancyColorer)
-    redundancyCounter = 2
     return ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer)
 cv.waitKey()
 cv.destroyAllWindows()

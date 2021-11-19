@@ -14,7 +14,7 @@ def ConvertToDocx(ListCC):
     textlines = ''
     listImg = []
     for CC in ListCC:
-        if CC['type'] == 'text':
+        if CC['type'] == 'phrase':
             textlines += ' '+pytesseract.image_to_string(CC['img'], config=custom_config)
         else:
             # Save to '/CC/'
