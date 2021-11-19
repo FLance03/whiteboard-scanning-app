@@ -46,10 +46,12 @@ def Preprocessing1(img):
 
     lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines, minLineLength, maxLineGap)
 
+    # Default values
+    halfline = int(img.shape[0]/2)
+    botline = ((absWidth, absWidth), (absWidth, absWidth))
+    topline = ((0,0), (0,0))
+
     if lines is not None:
-        halfline = int(img.shape[0]/2)
-        botline = ((absWidth, absWidth), (absWidth, absWidth))
-        topline = ((0,0), (0,0))
         # Might not need to compute for x-axis?
         for i in range(0, len(lines)):
             rho = lines[i][0][0]
@@ -101,8 +103,6 @@ def Preprocessing1(img):
 
     # Warp Perspective and resize
 
-    # I got this from interwebz, idk how to switch bl and br so that the warp doesn't break
-    # am stuped help
     rect = initRect(topline, (botline[1], botline[0]))
     (tl, tr, br, bl) = rect
     print("Rect:", rect)
