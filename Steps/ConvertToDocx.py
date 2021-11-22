@@ -34,8 +34,9 @@ def ConvertToDocx(ListCC):
     cell = rowCellsA[2]
     paragraph = cell.add_paragraph()
     cell_r = paragraph.add_run()
-    for x in range(num):
-        cell_r.add_picture('./CC/'+str(x)+'.png')
+    if num != 0:
+        for x in range(num):
+            cell_r.add_picture('./CC/'+str(x)+'.png')
     cellA = table.cell(2,0)
     cellB = table.cell(2,2)
     cellA.merge(cellB)

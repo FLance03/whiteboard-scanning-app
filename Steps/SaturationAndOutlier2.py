@@ -157,7 +157,7 @@ def main(img, CELLGROUPSIZE = 70, CELLSIZE = 15):
     print('Step 2 Time taken: ' + str(time()-start))
     return merged
 
-    cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
+    # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
     # cv.imshow('Modified', testing.ResizeWithAspectRatio(merged, height=500))
 
     # gray1 = cv.cvtColor(merged, cv.COLOR_BGR2GRAY)
@@ -168,7 +168,7 @@ def main(img, CELLGROUPSIZE = 70, CELLSIZE = 15):
     # _, otsu3 = cv.threshold(gray2, 0, 255, cv.THRESH_OTSU)
     # cv.imshow('Without Step 2 Otsu', otsu3)
 
-    cv.waitKey()
+    # cv.waitKey()
     # cv.destroyAllWindows()
 # main(cv.imread('lefthard.jpg'))
 

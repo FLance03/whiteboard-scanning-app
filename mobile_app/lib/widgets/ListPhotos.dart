@@ -126,6 +126,7 @@ class _ListPhotosState extends State<ListPhotos> {
   List<GestureDetector> WrapPhotos(BuildContext context, List<File> photos) {
     double widthPerPic = (MediaQuery.of(context).size.width - 2*picPadding - (picsPerRow - 1)) / picsPerRow;
     List<GestureDetector> images = [];
+    photos = FileHelpers.sortByFileName(photos);
 
     for (int i=0 ; i < photos.length ; i++) {
       images.add(
