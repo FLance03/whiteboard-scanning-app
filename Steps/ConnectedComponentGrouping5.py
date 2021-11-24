@@ -341,9 +341,12 @@ def main(img):
     nonTextLabels = np.zeros_like(labels, np.uint8)
 
     PreFilter(labels, copy=False)
-    coloredLabels = testing.imshow_components(labels)
+    # coloredLabels = testing.imshow_components(labels)
 
     labelsInfo = GetLabelsInfo(labels)
+    if np.all(labels == 0):
+        # When everything is blank
+        return labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
     # Filter based on area (9th index)
     filterInfo = Filter(labelsInfo, 9)
     widthsInfo, heightsInfo = filterInfo[:, 7], filterInfo[:, 8]
@@ -367,7 +370,7 @@ def main(img):
     textLabelCount = 0
     wordLabelCount = 0
     phraseLabelCount = 0
-    mimicColoredLabels = coloredLabels.copy()
+    # mimicColoredLabels = coloredLabels.copy()
     for count in range(2):
         runningThreshold = 20
         while runningThreshold > 2:
@@ -495,9 +498,9 @@ def main(img):
                             wordLabels[nonzeroY+top, nonzeroX+left] = wordLabelCount
                             # And label the determined text ones with a faster counter
                             textLabels[nonzeroY+top, nonzeroX+left] = textLabelCount
-                            mimicColoredLabels[nonzeroY+top, nonzeroX+left] = 0
-                            cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 5, (0, 255, 0), -1)
-                            cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 3, (0, 0, 255), -1)
+                            # mimicColoredLabels[nonzeroY+top, nonzeroX+left] = 0
+                            # cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 5, (0, 255, 0), -1)
+                            # cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 3, (0, 0, 255), -1)
                             # Same index in inPointsCenters and inPointsInfo relates to the same connected components
                             # Record the said index in deleteOutInd to keep track of which elements in outPoints are to be deleted
                             deleteOutInd.append(head + ind)

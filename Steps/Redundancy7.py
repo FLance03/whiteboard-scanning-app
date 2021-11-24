@@ -660,7 +660,9 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         # oldOrigin holds the coordinates of the origin of the past based on the (left, top) coordinates of the past
         #    in the current coordinate system (from mergedFeatures) and the coordinates of the past in the past coordinate
         #    system (from relatives)
-        oldOrigin = mergedFeatures[[0, 2]] - relatives[pastImgNum, pastImgInd]
+        oldOrigin = [mergedFeatures[0] - relatives[pastImgNum, pastImgInd, 0],
+                     mergedFeatures[2] - relatives[pastImgNum, pastImgInd, 1]]
+        # oldOrigin = mergedFeatures[[0, 2]] - relatives[pastImgNum, pastImgInd]
         for box in pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]]:
             left, right, top, bottom = box[:4]
             left, right, top, bottom = left+oldOrigin[0], right+oldOrigin[0], top+oldOrigin[1], bottom+oldOrigin[1]
@@ -890,26 +892,27 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
                     #    for this pastCCFeatures[pastImgInds[pastImgNum]]
                     pastImgInd += 1
             currentImgInd += 1
-        weights = np.array(weights)
-        # testing.Summarize(weights)
-        absMed = weights - np.median(weights)
-        IQR = np.percentile(absMed, 75) - np.percentile(absMed, 25)
-        THRESHOLD1 = np.median(weights) * 1.5
-        # THRESHOLD1 = np.median(weights) + IQR * 1.5
-        print('Max: ', np.max(weights))
-        print('Median * 1.5: ', np.median(weights) * 1.5)
-        print('Median * 2: ', np.median(weights) * 2)
-        print('Median + IQR * 1.5: ', np.median(weights) + IQR * 1.5)
-        print('THRESH: ', THRESHOLD1)
-        imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
-                                       type2Archives[-1], currentRedundancyColorer, currentImgFeatures, THRESHOLD1)
-        testing.ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels)
-    retVal = [{'img': CC['img'], 'type': CC['type']} for pic in imgsFeatures for CC in pic]
-    for img in retVal:
-        print(img['type'])
-        cv.imshow('img', testing.imshow_components(img['img'].astype(np.uint8)))
-        cv.waitKey()
-        cv.destroyAllWindows()
+        if weights != []:
+            weights = np.array(weights)
+            # testing.Summarize(weights)
+            absMed = weights - np.median(weights)
+            IQR = np.percentile(absMed, 75) - np.percentile(absMed, 25)
+            THRESHOLD1 = np.median(weights) * 1.5
+            # THRESHOLD1 = np.median(weights) + IQR * 1.5
+            print('Max: ', np.max(weights))
+            print('Median * 1.5: ', np.median(weights) * 1.5)
+            print('Median * 2: ', np.median(weights) * 2)
+            print('Median + IQR * 1.5: ', np.median(weights) + IQR * 1.5)
+            print('THRESH: ', THRESHOLD1)
+            imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
+                                           type2Archives[-1], currentRedundancyColorer, currentImgFeatures, THRESHOLD1)
+            testing.ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels)
+    retVal = [{'img': np.where(CC['img'] > 0, 0, 255).astype(np.uint8), 'type': CC['type']} for pic in imgsFeatures for CC in pic]
+    # for img in retVal:
+    #     print(img['type'])
+    #     cv.imshow('img', img['img'].astype(np.uint8))
+    #     cv.waitKey()
+    #     cv.destroyAllWindows()
     return retVal
         # for i, imgFeatures in enumerate(imgsFeatures[0]):
         #     cv.imshow(str(i), testing.imshow_components(imgFeatures['img'].astype(np.uint8)))
@@ -924,15 +927,18 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
         #     cv.imshow('Drawer: ' + str(i), np.where(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0), 255, 0).astype(np.uint8))
         # #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
 
+currentRedundancyColorer = []
+pastRedundancyColorer = []
+redundancyDrawer = []
+redundancyCounter = 2
 def main(imgsLabels):
+    global currentRedundancyColorer, redundancyDrawer, redundancyCounter
     maxWidth = 0
     maxHeight = 0
     imgsFeatures = []
     imgsPhraseLabels = []
     imgsNonTextLabels = []
-    currentRedundancyColorer = []
-    pastRedundancyColorer = []
-    redundancyDrawer = []
+    imgsLabels = [imgLabels for imgLabels in imgsLabels if np.any(imgLabels[0] != 0)]
     numImgs = len(imgsLabels)
     combinations = sorted(list(comb(range(numImgs), 2)))
     redundancyCombs = np.empty((numImgs, numImgs), dtype=np.uint8)
@@ -996,7 +1002,6 @@ def main(imgsLabels):
     redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
     currentRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
     currentRedundancyColorer = np.array(currentRedundancyColorer)
-    redundancyCounter = 2
     return ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer)
 cv.waitKey()
 cv.destroyAllWindows()

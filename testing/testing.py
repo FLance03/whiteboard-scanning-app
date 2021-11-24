@@ -145,9 +145,9 @@ def ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels
             currImg[imgsPhraseLabels[i].nonzero()] = (255, 255, 255)
             wholePic = np.where(np.logical_and(redundancyColorer[i, :, :, np.newaxis]!=0, currImg==255),
                                 colored, currImg)
-            cv.imshow('Colorer: ' + str(i), wholePic)
-        cv.waitKey()
-        cv.destroyAllWindows()
+            # cv.imshow('Colorer: ' + str(i), wholePic)
+        # cv.waitKey()
+        # cv.destroyAllWindows()
 
 def Summarize(data):
     df = pd.DataFrame(data, columns=['Values'])

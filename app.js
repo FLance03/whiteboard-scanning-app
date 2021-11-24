@@ -15,12 +15,12 @@ app.post('/', async function(req, res)  {
     var base64Img = req.body.img;
     console.log(base64Img);
     for (var i = 0 ; i < base64Img.length ; i++) {
-        fs.writeFileSync(`input${i}.jpg`,req.body.img[i], {encoding: 'base64'});
+        fs.writeFileSync(`./Server/${i}.jpg`,req.body.img[i], {encoding: 'base64'});
     }
-    const python = spawn('python',["../test.py"]);
+    const python = spawn('python',["./main.py"]);
     python.stdout.on('data', function(data) {
         console.log(data.toString());
-        var output = fs.readFileSync(`${__dirname}/../output.docx`, {encoding: 'base64'});
+        var output = fs.readFileSync(`${__dirname}/output.docx`, {encoding: 'base64'});
         // res.download(`${__dirname}/../output.docx`, 'output.docx');
         console.log(output);
         res.status(201);
