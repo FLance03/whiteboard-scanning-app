@@ -16,8 +16,8 @@ import math
 # - Modify perspective transform so that it works with values outside the width and height of an image (Because houghline equation gives values outside image height and wwidth)
 # - Try to make a buffer in the middle line
 
-imageNameInput = "redundancyleft"
-imageNameOutput = "step1redundancyfront"
+imageNameInput = "1"
+imageNameOutput = "1"
 
 def empty():
     pass
@@ -44,11 +44,15 @@ def findLinePoints(p1, p2, width):
     x2 = p2[0]
     y2 = p2[1]
 
+    print(x1, y1, x2, y2)
     if(x1>x2):
         x1, x2 = x2, x1
         y1, y2 = y2, y1
-    print(x1, y1, x2, y2)
-    slope = (y2-y1)/(x2-x1)
+    
+    if(x1 == x2):
+        slope = 0
+    else: 
+        slope = (y2-y1)/(x2-x1)
 
     # Solve for first pair of coordinates
     x2 = 0
@@ -64,22 +68,27 @@ def findLinePoints(p1, p2, width):
     return ((x1, y1), (x2, y2))
 
 cv.namedWindow("Houghlines")
-cv.resizeWindow("Houghlines", 900, 350)
+cv.resizeWindow("Houghlines", 900, 300)
 # Threshold value here, change 800 to something else
-cv.createTrackbar("threshold", "Houghlines", 800, 10000, empty)
+cv.createTrackbar("threshold", "Houghlines", 1800, 10000, empty)
 cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
 img = cv.imread('images/'+imageNameInput+'.jpg')
-width = 5000
+width = img.shape[0]
 absWidth = 10000
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 blur = cv.GaussianBlur(gray, (5,5), 0) 
 
 # Create structuring elements
-horizontal_size = 100
+cols = img.shape[1]
+horizontal_size = cols // 30
 horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontal_size, 1))
+
+# erode and dilate operations
+# morph = cv.erode(blur, horizontalStructure)
+# morph = cv.dilate(morph, horizontalStructure)
 
 # apply close to connect the white areas
 morph = cv.morphologyEx(blur, cv.MORPH_OPEN, horizontalStructure)
@@ -88,17 +97,17 @@ morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, horizontalStructure)
 # Sobel edge detection with Hough Transform
 sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
 abs_grad_x = cv.convertScaleAbs(sobelx)
-canny = cv.Canny(morph, cv.CV_64F, 75, 0)
+canny = cv.Canny(abs_grad_x, cv.CV_64F, 75, 0)
 
 while True:
     res = img.copy()
     wrp = img.copy()
 
     threshold = cv.getTrackbarPos("threshold", "Houghlines")
-    lines = cv.getTrackbarPos("lines", "Houghlines")
+    lines_number = cv.getTrackbarPos("lines", "Houghlines")
     minLineLength = cv.getTrackbarPos("minLineLength", "Houghlines")
     maxLineGap = cv.getTrackbarPos("maxLineGap", "Houghlines")
-    lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines, minLineLength, maxLineGap)
+    lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     if lines is not None:
         halfline = int(img.shape[0]/2)
@@ -120,10 +129,16 @@ while True:
 
             # Choosing the top line and bottom line
             # Instead of comparing y[0], compare middle point y of the line??
+
             if pt1[1] < halfline and halfline - pt1[1] < halfline - topline[0][1]:
                 topline = (pt1, pt2)
             elif pt1[1] > halfline and pt1[1] - halfline < botline[0][1] - halfline:
                 botline = (pt1, pt2)
+
+            # if pt1[1] < halfline:
+            #     topline = (pt1, pt2)
+            # elif pt1[1] > halfline:
+            #     botline = (pt1, pt2)
 
             # Displaying line coordinates
             print("-------------------------------")
@@ -132,6 +147,12 @@ while True:
             print("PT2: ", pt2[0], pt2[1])
 
             cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
+
+    # if only topline is detected, then calculate botline and vice versa
+    if botline == ((absWidth, absWidth), (absWidth, absWidth)) and topline != ((0,0), (0,0)):
+        botline = ((topline[0][0], halfline*2-topline[0][1]), (topline[1][0], halfline*2-topline[1][1]))
+    elif topline == ((0,0), (0,0)) and botline != ((absWidth, absWidth), (absWidth, absWidth)):
+        topline = ((topline[1][0], botline[1][1]-halfline), (botline[0][0], botline[0][1]-halfline))
 
     # top line blue, bot line green, halfline teal
     cv.line(res, topline[0], topline[1], (255,0,0), 5, cv.LINE_AA)
@@ -185,7 +206,7 @@ while True:
     cv.imshow("res", resize(res))
     # cv.imshow("morph", resize(morph))
     cv.imshow("sobelx", resize(abs_grad_x))
-    cv.imshow("canny", resize(canny))
+    cv.imshow("morph", resize(morph))
     cv.imshow("warped", resize(warped))
     cv.imwrite(imageNameOutput+'.jpg',resize(warped))
     if cv.waitKey(0) & 0xFF == ord('q'):

@@ -18,19 +18,24 @@ import math
 
 def Preprocessing1(img):
     # Values for Houghlines here
-    threshold = 800
-    lines = 0
+    threshold = 1800
+    lines_number = 0
     minLineLength = 0
     maxLineGap = 0
 
-    width = 5000
+    width = img.shape[0]
     absWidth = 10000
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blur = cv.GaussianBlur(gray, (5,5), 0) 
 
     # Create structuring elements
-    horizontal_size = 100
+    cols = img.shape[1]
+    horizontal_size = cols // 30
     horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontal_size, 1))
+
+    # erode and dilate operations
+    # morph = cv.erode(blur, horizontalStructure)
+    # morph = cv.dilate(morph, horizontalStructure)
 
     # apply close to connect the white areas
     morph = cv.morphologyEx(blur, cv.MORPH_OPEN, horizontalStructure)
@@ -39,47 +44,56 @@ def Preprocessing1(img):
     # Sobel edge detection with Hough Transform
     sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
     abs_grad_x = cv.convertScaleAbs(sobelx)
-    canny = cv.Canny(morph, cv.CV_64F, 75, 0)
+    canny = cv.Canny(abs_grad_x, cv.CV_64F, 75, 0)
 
     res = img.copy()
     wrp = img.copy()
 
-    lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines, minLineLength, maxLineGap)
+    lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     # Default values
-    halfline = int(img.shape[0]/2)
+    halfline = int(width/2)
     botline = ((absWidth, absWidth), (absWidth, absWidth))
     topline = ((0,0), (0,0))
+    # Might not need to compute for x-axis?
+    for i in range(0, len(lines)):
+        rho = lines[i][0][0]
+        theta = lines[i][0][1]
+        a = math.cos(theta)
+        b = math.sin(theta)
+        x0 = a * rho
+        y0 = b * rho
+        pt1 = (int(x0 + width*(-b)), int(y0 + width*(a)))
+        pt2 = (int(x0 - width*(-b)), int(y0 - width*(a)))
 
-    if lines is not None:
-        # Might not need to compute for x-axis?
-        for i in range(0, len(lines)):
-            rho = lines[i][0][0]
-            theta = lines[i][0][1]
-            a = math.cos(theta)
-            b = math.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            pt1 = (int(x0 + width*(-b)), int(y0 + width*(a)))
-            pt2 = (int(x0 - width*(-b)), int(y0 - width*(a)))
+        # Find actual points in x=0 and x=max-width
+        (pt1, pt2) = findLinePoints(pt1, pt2, res.shape[1])
 
-            # Find actual points in x=0 and x=max-width
-            (pt1, pt2) = findLinePoints(pt1, pt2, res.shape[1])
+        # Choosing the top line and bottom line
+        # Instead of comparing y[0], compare middle point y of the line??
 
-            # Choosing the top line and bottom line
-            # Instead of comparing y[0], compare middle point y of the line??
-            if pt1[1] < halfline and halfline - pt1[1] < halfline - topline[0][1]:
-                topline = (pt1, pt2)
-            elif pt1[1] > halfline and pt1[1] - halfline < botline[0][1] - halfline:
-                botline = (pt1, pt2)
+        if pt1[1] < halfline and halfline - pt1[1] < halfline - topline[0][1]:
+            topline = (pt1, pt2)
+        elif pt1[1] > halfline and pt1[1] - halfline < botline[0][1] - halfline:
+            botline = (pt1, pt2)
 
-            # Displaying line coordinates
-            # print("-------------------------------")
-            # print("Line: ")
-            # print("PT1: ", pt1[0], pt1[1])
-            # print("PT2: ", pt2[0], pt2[1])
+        # if pt1[1] < halfline:
+        #     topline = (pt1, pt2)
+        # elif pt1[1] > halfline:
+        #     botline = (pt1, pt2)
 
-            cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
+        # Displaying line coordinates
+        print("-------------------------------")
+        print("Line: ")
+        print("PT1: ", pt1[0], pt1[1])
+        print("PT2: ", pt2[0], pt2[1])
+
+        cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
+    # if only topline is detected, then calculate botline and vice versa
+    if botline == ((absWidth, absWidth), (absWidth, absWidth)) and topline != ((0,0), (0,0)):
+        botline = ((topline[0][0], halfline*2-topline[0][1]), (topline[1][0], halfline*2-topline[1][1]))
+    elif topline == ((0,0), (0,0)) and botline != ((absWidth, absWidth), (absWidth, absWidth)):
+        topline = ((topline[1][0], botline[1][1]-halfline), (botline[0][0], botline[0][1]-halfline))
 
     # top line blue, bot line green, halfline teal
     cv.line(res, topline[0], topline[1], (255,0,0), 5, cv.LINE_AA)
