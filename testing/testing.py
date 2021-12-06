@@ -116,9 +116,9 @@ def ShowCurrentPast(currentCCFeatures, pastCCFeatures):
     cv.waitKey()
     cv.destroyAllWindows()
 
-def ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels, imgsNonTextLabels):
-    redundancyColorer = currentRedundancyColorer.copy().astype(np.uint8)
-    # redundancyColorer = np.concatenate((currentRedundancyColorer, pastRedundancyColorer), axis=0).astype(np.uint8)
+def ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels):
+    # redundancyColorer = currentRedundancyColorer.copy().astype(np.uint8)
+    redundancyColorer = np.concatenate((currentRedundancyColorer, pastRedundancyColorer), axis=0).astype(np.uint8)
     uniqueLabels = np.unique(redundancyColorer)
     maxLabel = np.max(uniqueLabels)
     uniqueLabelsLen = len(uniqueLabels)
@@ -137,12 +137,12 @@ def ColorRedundancy(currentRedundancyColorer, redundancyDrawer, imgsPhraseLabels
             labeled_img[label_hue==0] = 0
             colored = labeled_img
             # currImg holds all images in BGR format where those with writings are white
-            # currImg = np.zeros((*imgsNonTextLabels[i % len(currentRedundancyColorer)].shape, 3), dtype=np.uint8)
-            # currImg[imgsNonTextLabels[i % len(currentRedundancyColorer)].nonzero()] = (255, 255, 255)
-            # currImg[imgsPhraseLabels[i % len(currentRedundancyColorer)].nonzero()] = (255, 255, 255)
-            currImg = np.zeros((*imgsNonTextLabels[i].shape, 3), dtype=np.uint8)
-            currImg[imgsNonTextLabels[i].nonzero()] = (255, 255, 255)
-            currImg[imgsPhraseLabels[i].nonzero()] = (255, 255, 255)
+            currImg = np.zeros((*imgsNonTextLabels[i % len(currentRedundancyColorer)].shape, 3), dtype=np.uint8)
+            currImg[imgsNonTextLabels[i % len(currentRedundancyColorer)].nonzero()] = (255, 255, 255)
+            currImg[imgsPhraseLabels[i % len(currentRedundancyColorer)].nonzero()] = (255, 255, 255)
+            # currImg = np.zeros((*imgsNonTextLabels[i].shape, 3), dtype=np.uint8)
+            # currImg[imgsNonTextLabels[i].nonzero()] = (255, 255, 255)
+            # currImg[imgsPhraseLabels[i].nonzero()] = (255, 255, 255)
             wholePic = np.where(np.logical_and(redundancyColorer[i, :, :, np.newaxis]!=0, currImg==255),
                                 colored, currImg)
             # cv.imshow('Colorer: ' + str(i), wholePic)

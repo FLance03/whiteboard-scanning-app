@@ -3,7 +3,7 @@ import testing
 import numpy as np
 import cv2 as cv
 
-img = cv.imread('test.png')
+img = cv.imread('Screenshot (40).png')
 # retImg = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
 # for r, row in enumerate(img):
 #     for c, col in enumerate(row):

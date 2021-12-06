@@ -11,20 +11,17 @@ app.use(express.json({
 
 // app.use(express.json()) 
 app.post('/', async function(req, res)  {
-    console.log('Hi');
+    console.log('Received, Hello');
     var base64Img = req.body.img;
-    console.log(base64Img);
     for (var i = 0 ; i < base64Img.length ; i++) {
         fs.writeFileSync(`./Server/${i}.jpg`,req.body.img[i], {encoding: 'base64'});
     }
     const python = spawn('python',["./main.py"]);
     python.stdout.on('data', function(data) {
-        console.log(data.toString());
         var output = fs.readFileSync(`${__dirname}/output.docx`, {encoding: 'base64'});
         // res.download(`${__dirname}/../output.docx`, 'output.docx');
-        console.log(output);
         res.status(201);
-	console.log('DONE!!');
+        console.log('Program done');
         res.send(output);
     });
 });

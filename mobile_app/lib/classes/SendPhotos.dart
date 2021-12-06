@@ -18,7 +18,7 @@ import '../screens/Home.dart';
 
 */
 class SendPhotos {
-  final serverURL = 'http://192.168.0.76:15024';
+  final serverURL = 'http://192.168.0.61:15024';
 
   void sendFiles(BuildContext context, List<File> selectedPhotos) async{
     OverlayEntry _overlayEntry = this._createOverlayEntry(context);
