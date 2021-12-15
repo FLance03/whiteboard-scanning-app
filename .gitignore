@@ -5,6 +5,9 @@ __pycache__/
 *.JPG
 *.png
 *.PNG
+*.mp4
+*.mkv
+testing/automation/timestamps.txt
 Server/node_modules/.bin/mime
 Server/node_modules/.bin/mime.cmd
 Server/node_modules/.bin/mime.ps1
