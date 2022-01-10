@@ -52,22 +52,24 @@ def Preprocessing1(img):
     lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     # Default values
+
     halfline = int(width/2)
     botline = ((absWidth, absWidth), (absWidth, absWidth))
     topline = ((0,0), (0,0))
-    # Might not need to compute for x-axis?
-    for i in range(0, len(lines)):
-        rho = lines[i][0][0]
-        theta = lines[i][0][1]
-        a = math.cos(theta)
-        b = math.sin(theta)
-        x0 = a * rho
-        y0 = b * rho
-        pt1 = (int(x0 + width*(-b)), int(y0 + width*(a)))
-        pt2 = (int(x0 - width*(-b)), int(y0 - width*(a)))
 
-        # Find actual points in x=0 and x=max-width
-        (pt1, pt2) = findLinePoints(pt1, pt2, res.shape[1])
+    if lines is not None:
+        for i in range(0, len(lines)):
+            rho = lines[i][0][0]
+            theta = lines[i][0][1]
+            a = math.cos(theta)
+            b = math.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + width*(-b)), int(y0 + width*(a)))
+            pt2 = (int(x0 - width*(-b)), int(y0 - width*(a)))
+
+            # Find actual points in x=0 and x=max-width
+            (pt1, pt2) = findLinePoints(pt1, pt2, res.shape[1])
 
         # Choosing the top line and bottom line
         # Instead of comparing y[0], compare middle point y of the line??
@@ -89,6 +91,8 @@ def Preprocessing1(img):
         print("PT2: ", pt2[0], pt2[1])
 
         cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
+
+    # Might not need to compute for x-axis?
     # if only topline is detected, then calculate botline and vice versa
     if botline == ((absWidth, absWidth), (absWidth, absWidth)) and topline != ((0,0), (0,0)):
         botline = ((topline[0][0], halfline*2-topline[0][1]), (topline[1][0], halfline*2-topline[1][1]))
@@ -133,13 +137,13 @@ def Preprocessing1(img):
 
     dst = np.array([
         [0, 0],
-        [halfline - 1, 0],
-        [halfline - 1, maxHeight - 1],
+        [maxWidth - 1, 0],
+        [maxWidth - 1, maxHeight - 1],
         [0, maxHeight - 1]], dtype = "float32")
     
     # Computing the perspective transform matrix + application
     M = cv.getPerspectiveTransform(rect, dst)
-    warped = cv.warpPerspective(wrp, M, (halfline, maxHeight))
+    warped = cv.warpPerspective(wrp, M, (maxWidth, maxHeight))
 
     return warped
 

@@ -13,8 +13,8 @@ topRpt = (2985, 1115)
 botLpt = (0, 5055)
 botRpt = (2985, 4167)
 
-imageNameInput = "redundancyleft"
-imageNameOutput = "step1redundancyfront"
+imageNameInput = "pic1"
+imageNameOutput = "test1"
 
 def empty():
     pass
@@ -68,9 +68,10 @@ def findLinePoints(p1, p2, width):
 # cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 # cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/Group Tests/1/'+imageNameInput+'.jpg')
+img = cv.imread('images/'+imageNameInput+'.png')
+cv.imshow(img)
 testing.PlotIt(img)
-width = 5000
+width = img.shape[1]
 absWidth = 10000
 # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 # blur = cv.GaussianBlur(gray, (5,5), 0) 
@@ -131,8 +132,8 @@ while True:
 
     dst = np.array([
 		[0, 0],
-		[halfline - 1, 0],
-		[halfline - 1, maxHeight - 1],
+		[maxWidth - 1, 0],
+		[maxWidth - 1, maxHeight - 1],
 		[0, maxHeight - 1]], dtype = "float32")
     
     # Computing the perspective transform matrix + application
