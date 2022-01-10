@@ -156,7 +156,7 @@ while True:
 
             cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
     else:
-        print('Wasnt able to detect lines after Preprocessing. Change threshold.')
+        print('ERROR: Wasnt able to detect lines after Preprocessing. Change threshold.')
 
     # if only topline is detected, then calculate botline and vice versa
     if botline == ((absWidth, absWidth), (absWidth, absWidth)) and topline != ((0,0), (0,0)):
