@@ -16,14 +16,14 @@ import math
 # - Modify perspective transform so that it works with values outside the width and height of an image (Because houghline equation gives values outside image height and wwidth)
 # - Try to make a buffer in the middle line
 
-imageNameInput = "1"
+imageNameInput = "pic1"
 imageNameOutput = "1"
 
-def empty():
+def empty(self):
     pass
 
 def resize(img):
-    scale_percent = 15 # percent of original size
+    scale_percent = 70 # percent of original size
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -67,19 +67,27 @@ def findLinePoints(p1, p2, width):
 
     return ((x1, y1), (x2, y2))
 
+# Changing the threshold depending on resolution
+img = cv.imread('images/'+imageNameInput+'.png')
+width = img.shape[1]
+height = img.shape[0]
+absWidth = 10000
+
+if height > 1080 and width > 1920:
+    threshold = 1800
+else:
+    threshold = 800 
+
 cv.namedWindow("Houghlines")
 cv.resizeWindow("Houghlines", 900, 300)
-# Threshold value here, change 800 to something else
-cv.createTrackbar("threshold", "Houghlines", 1800, 10000, empty)
+# Threshold value here, change 800 / 1800 to something else
+cv.createTrackbar("threshold", "Houghlines", threshold, 10000, empty)
 cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/'+imageNameInput+'.jpg')
-width = img.shape[0]
-absWidth = 10000
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-blur = cv.GaussianBlur(gray, (5,5), 0) 
+blur = cv.GaussianBlur(gray, (7,7), 0) 
 
 # Create structuring elements
 cols = img.shape[1]
@@ -99,6 +107,14 @@ sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
 abs_grad_x = cv.convertScaleAbs(sobelx)
 canny = cv.Canny(abs_grad_x, cv.CV_64F, 75, 0)
 
+# while True:
+#    cv.imshow('blur', resize(blur))
+#    cv.imshow('morph', resize(morph))
+#    cv.imshow('abs_grad_x', resize(abs_grad_x))
+#    cv.imshow('canny', resize(canny))
+#    if cv.waitKey(0) & 0xFF == ord('q'):
+#         break
+
 while True:
     res = img.copy()
     wrp = img.copy()
@@ -110,7 +126,7 @@ while True:
     lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     if lines is not None:
-        halfline = int(img.shape[0]/2)
+        halfline = int(width/2)
         botline = ((absWidth, absWidth), (absWidth, absWidth))
         topline = ((0,0), (0,0))
         # Might not need to compute for x-axis?
@@ -147,6 +163,8 @@ while True:
             print("PT2: ", pt2[0], pt2[1])
 
             cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
+    else:
+        print('ERROR: Wasnt able to detect lines after Preprocessing. Change threshold.')
 
     # if only topline is detected, then calculate botline and vice versa
     if botline == ((absWidth, absWidth), (absWidth, absWidth)) and topline != ((0,0), (0,0)):
@@ -186,6 +204,8 @@ while True:
     widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
     widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
     maxWidth = max(int(widthA), int(widthB))
+    print("Width: ", width)
+    print("MaxWidth: ", maxWidth)
 
     # Maximum height computation
     heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
@@ -194,13 +214,13 @@ while True:
 
     dst = np.array([
 		[0, 0],
-		[halfline - 1, 0],
-		[halfline - 1, maxHeight - 1],
+		[maxWidth - 1, 0],
+		[maxWidth - 1, maxHeight - 1],
 		[0, maxHeight - 1]], dtype = "float32")
     
     # Computing the perspective transform matrix + application
     M = cv.getPerspectiveTransform(rect, dst)
-    warped = cv.warpPerspective(wrp, M, (halfline, maxHeight))
+    warped = cv.warpPerspective(wrp, M, (maxWidth, maxHeight))
 
     # Display
     cv.imshow("res", resize(res))
@@ -208,6 +228,6 @@ while True:
     cv.imshow("sobelx", resize(abs_grad_x))
     cv.imshow("morph", resize(morph))
     cv.imshow("warped", resize(warped))
-    cv.imwrite(imageNameOutput+'.jpg',resize(warped))
+    cv.imwrite(imageNameOutput+'.jpg', warped)
     if cv.waitKey(0) & 0xFF == ord('q'):
         break

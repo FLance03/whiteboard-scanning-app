@@ -14,8 +14,8 @@ botLpt = (0, 5029)
 botRpt = (2973, 3949)
 topLpt, topRpt, botLpt, botRpt = (0, 1081), (2414, 497), (0, 4256), (2414, 5310)
 
-imageNameInput = "9z"
-imageNameOutput = "9a"
+imageNameInput = "pic1"
+imageNameOutput = "test1"
 
 def empty():
     pass
@@ -69,9 +69,16 @@ def findLinePoints(p1, p2, width):
 # cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 # cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
+<<<<<<< HEAD
 img = cv.imread('./'+imageNameInput+'.jpg')
 # testing.PlotIt(img)
 width = 5000
+=======
+img = cv.imread('images/'+imageNameInput+'.png')
+cv.imshow(img)
+testing.PlotIt(img)
+width = img.shape[1]
+>>>>>>> ba07f3beb80e5d19e85b8ef7537e26e6e714e56d
 absWidth = 10000
 # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 # blur = cv.GaussianBlur(gray, (5,5), 0) 
@@ -132,8 +139,8 @@ while True:
 
     dst = np.array([
 		[0, 0],
-		[halfline - 1, 0],
-		[halfline - 1, maxHeight - 1],
+		[maxWidth - 1, 0],
+		[maxWidth - 1, maxHeight - 1],
 		[0, maxHeight - 1]], dtype = "float32")
     
     # Computing the perspective transform matrix + application
