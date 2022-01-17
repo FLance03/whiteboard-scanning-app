@@ -18,12 +18,12 @@ import math
 
 def Preprocessing1(img):
     # Values for Houghlines here
-    threshold = 1800
+    width = img.shape[0]
+    height = img.shape[1]
+    threshold = 1800 if height > 1080 and width > 1920 else 800
     lines_number = 0
     minLineLength = 0
     maxLineGap = 0
-
-    width = img.shape[0]
     absWidth = 10000
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blur = cv.GaussianBlur(gray, (5,5), 0) 
@@ -91,6 +91,8 @@ def Preprocessing1(img):
         print("PT2: ", pt2[0], pt2[1])
 
         cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
+    else:
+        print('ERROR: Wasnt able to detect lines after Preprocessing. Change threshold.')
 
     # Might not need to compute for x-axis?
     # if only topline is detected, then calculate botline and vice versa

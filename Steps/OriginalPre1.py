@@ -67,17 +67,25 @@ def findLinePoints(p1, p2, width):
 
     return ((x1, y1), (x2, y2))
 
+# Changing the threshold depending on resolution
+img = cv.imread('images/'+imageNameInput+'.png')
+width = img.shape[1]
+height = img.shape[0]
+absWidth = 10000
+
+if height > 1080 and width > 1920:
+    threshold = 1800
+else:
+    threshold = 800 
+
 cv.namedWindow("Houghlines")
 cv.resizeWindow("Houghlines", 900, 300)
 # Threshold value here, change 800 / 1800 to something else
-cv.createTrackbar("threshold", "Houghlines", 800, 10000, empty)
+cv.createTrackbar("threshold", "Houghlines", threshold, 10000, empty)
 cv.createTrackbar("lines", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-img = cv.imread('images/'+imageNameInput+'.png')
-width = img.shape[1]
-absWidth = 10000
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 blur = cv.GaussianBlur(gray, (7,7), 0) 
 
@@ -118,7 +126,7 @@ while True:
     lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     if lines is not None:
-        halfline = int(img.shape[0]/2)
+        halfline = int(width/2)
         botline = ((absWidth, absWidth), (absWidth, absWidth))
         topline = ((0,0), (0,0))
         # Might not need to compute for x-axis?
