@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
-import SaturationAndOutlier2 as Step2
+import Steps.SaturationAndOutlier2 as Step2
 
 
 def PlotIt(img, title=None):
@@ -34,6 +34,7 @@ def GetLabelsInfo(labels, numLabels=None):
 def cropOutEdges(img):
     assert img is not None, "Image does not exist"
     img = Step2.main(img)
+    assert img is not None, "Image does not exist"
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     _, binarized = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
     binarized = np.where(binarized == 255, 0, 1)
@@ -41,8 +42,8 @@ def cropOutEdges(img):
     binarized = np.where(binarized == 0, 255, 0)
     return binarized[top:bottom+1, left:right+1].astype(np.uint8)
 
-def main():
-    PlotIt(cropOutEdges(cv.imread('test.jpg')))
-    return cropOutEdges(cv.imread('test.jpg'))
+def main(img):
+    # PlotIt(cropOutEdges(cv.imread(read)))
+    return cropOutEdges(img)
 
-cv.imwrite('..1.png', main())
+# cv.imwrite('..1.png', main(img=cv.imread('testing.png')))

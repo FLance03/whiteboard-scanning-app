@@ -5,13 +5,15 @@ from time import time
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
+from sklearn import svm
+import joblib
 
 from Steps import (SaturationAndOutlier2 as Step2,
                    ConnectedComponentGrouping5 as Step5,
                    FeatureExtraction6 as Step6)
 from testing import testing
 
-ROW_OVERLAP_SIZE = 2
+ROW_OVERLAP_SIZE = 3
 ROW_WINDOW_SIZE = ROW_OVERLAP_SIZE * 2
 COL_OVERLAP_SIZE = 5
 COL_WINDOW_SIZE = 10
@@ -33,52 +35,37 @@ sumTime = sumTime + time() - lapTime
 count += 1
 
 def TestCompatibilityOfTwoFeatures(first, second):
+    global fit
     assert first.shape == second.shape, "hi"
     assert first.ndim == 3, str(first.ndim)
+    assert first.shape[2] == 18
 
-    quarterPi = np.pi / 2
-    withChangeInds = np.logical_and(first[:, :, 11]==2, second[:, :, 11]==2)
-    withoutChange = (
-                    ((np.abs(first[:, :, 0] - second[:, :, 0]) <= quarterPi) |
-                     (np.abs(first[:, :, 1] - second[:, :, 1]) <= quarterPi)) &
-                     (np.abs(first[:, :, 2] - second[:, :, 2]) <= quarterPi) |
-                    ((np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) &
-                     (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1))
-                    )
-    # withChange = (np.abs(first[:, :, 2] - second[:, :, 2]) <= 0.5) & \
-    #              (np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) & \
-    #              (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1) & \
-    #              (np.abs(first[:, :, 8] - second[:, :, 8]) <= 0.5) & \
-    #              (np.abs(first[:, :, 9] - second[:, :, 9]) <= 0.5) & \
-    #              (np.abs(first[:, :, 10] - second[:, :, 10]) <= 1)
-    withChange = (
-                    ((np.abs(first[:, :, 0] - second[:, :, 0]) <= quarterPi) |
-                     (np.abs(first[:, :, 1] - second[:, :, 1]) <= quarterPi)) &
-                     (np.abs(first[:, :, 2] - second[:, :, 2]) <= quarterPi) |
-                    ((np.abs(first[:, :, 6] - second[:, :, 6]) <= quarterPi) |
-                     (np.abs(first[:, :, 7] - second[:, :, 7]) <= quarterPi)) &
-                     (np.abs(first[:, :, 8] - second[:, :, 8]) <= quarterPi) |
-                    ((np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.5) &
-                     (np.abs(first[:, :, 4] - second[:, :, 4]) <= 1)) |
-                    ((np.abs(first[:, :, 3] - second[:, :, 3]) <= 0.3) &
-                     (np.abs(first[:, :, 4] - second[:, :, 4]) <= 0.6))
-                    )
-    # testing.FullPrint2('print1', first)
-    # testing.FullPrint2('print2', second)
-    # exit()
-    withinThresholds = np.where(withChangeInds, withChange, withoutChange)
-    # When within thresholds, label as 2
-    withinThresholds = np.where(withinThresholds, 2, 0)
+    img_1, img_2 = first.reshape(-1, 18), second.reshape(-1, 18)
+    output = np.ones((img_1.shape[0]), dtype=np.uint8)
+    img_1_non_blanks = np.logical_or(img_1[:, 8] != 0, img_1[:, 17] != 0)
+    img_2_non_blanks = np.logical_or(img_2[:, 8] != 0, img_2[:, 17] != 0)
+    img_non_blanks = np.logical_or(img_1_non_blanks, img_2_non_blanks)
+    non_blank_inds = np.asarray(img_non_blanks).nonzero()[0]
+    if non_blank_inds.size > 0:
+        img_1, img_2 = img_1[img_non_blanks], img_2[img_non_blanks]
+        diff = np.abs(img_1 - img_2)
+        diff = np.concatenate((diff[:, :4], diff[:, 5:], img_1[:, 4:5], img_2[:, 4:5]), axis=1)
+        # Scale to preprocess
+        diff[:, (0, 1, 2, 8, 9, 10)] = (diff[:, (0, 1, 2, 8, 9, 10)] - 0) / (60 - 0)
+        diff[:, (12)] = (diff[:, (12)]) / (6 - 0)
+        diff[:, (4, 13)] = (diff[:, (4, 13)]) / (2.5 - 0)
+        diff[:, (5, 14)] = (diff[:, (5, 14)]) / (3 - 0)
+        diff[:, (6, 15)] = (diff[:, (6, 15)]) / (10 - 0)
+        diff[:, (7, 16)] = (diff[:, (7, 16)]) / (2 - 0)
+        diff[:, (17, 18)] = (diff[:, (17, 18)]) / (6 - 0)
 
-    # When the feature has no black pixels in both images, label as 1
-    blanks = np.logical_and(first[:, :, 5]==0, second[:, :, 5]==0)
-    withinThresholds[blanks] = 1
+        # start_pred = time()
+        output[non_blank_inds] = np.where(fit.predict(diff) == 1, 2, 0)
+        # print(time() - start_pred)
+    # print('output: ', output[:10])
+    output = output.reshape(*first.shape[:-1])
 
-    # When one feature does not have black pixels while the other has, deny it
-    semiBlanks = np.logical_xor(first[:, :, 5]==0, second[:, :, 5]==0)
-    withinThresholds[semiBlanks] = 0
-
-    return withinThresholds
+    return output
 
 
 def GetWeight(redundancyMatrix):
@@ -170,33 +157,34 @@ def CompareFeatures(first, second):
         # Note: len(first) is just height which should not change: len(first) == len(second) == len(smallerWindow)...
         assert smallerWindow.shape == largerWindow.shape, (smallerWindow.shape, largerWindow.shape)
         redundancyMatrix = TestCompatibilityOfTwoFeatures(smallerWindow, largerWindow)
-        weight, redundancyOffset = GetWeight(redundancyMatrix)
-        if weight > winner['weight']:
-            if firstIsSmaller:
-                winner = {
-                    'weight': weight,
-                    'firstLeft': smallerStart,
-                    'firstRight': smallerStop - 1,
-                    'firstFeatures': smallerWindow,
-                    'secondLeft': largerStart,
-                    'secondRight': largerStop - 1,
-                    'secondFeatures': largerWindow,
-                    'redundancyMatrix': redundancyMatrix,
-                    'redundancyOffset': redundancyOffset,
-                }
-            else:
-                winner = {
-                    'weight': weight,
-                    'firstLeft': largerStart,
-                    'firstRight': largerStop - 1,
-                    'firstFeatures': largerWindow,
-                    'secondLeft': smallerStart,
-                    'secondRight': smallerStop - 1,
-                    'secondFeatures': smallerWindow,
-                    'redundancyMatrix': redundancyMatrix,
-                    'redundancyOffset': redundancyOffset,
-                }
-            # return winner
+        if np.count_nonzero(redundancyMatrix) > redundancyMatrix.size * 0.60:
+            weight, redundancyOffset = GetWeight(redundancyMatrix)
+            if weight > winner['weight']:
+                if firstIsSmaller:
+                    winner = {
+                        'weight': weight,
+                        'firstLeft': smallerStart,
+                        'firstRight': smallerStop - 1,
+                        'firstFeatures': smallerWindow,
+                        'secondLeft': largerStart,
+                        'secondRight': largerStop - 1,
+                        'secondFeatures': largerWindow,
+                        'redundancyMatrix': redundancyMatrix,
+                        'redundancyOffset': redundancyOffset,
+                    }
+                else:
+                    winner = {
+                        'weight': weight,
+                        'firstLeft': largerStart,
+                        'firstRight': largerStop - 1,
+                        'firstFeatures': largerWindow,
+                        'secondLeft': smallerStart,
+                        'secondRight': smallerStop - 1,
+                        'secondFeatures': smallerWindow,
+                        'redundancyMatrix': redundancyMatrix,
+                        'redundancyOffset': redundancyOffset,
+                    }
+                # return winner
         # largerStart increases depending on the value of smallerStart from the previous iteration
         largerStart = 0 if smallerStart != 0 else largerStart + 1
         # smallerStop decreases depending on the value of largerStop from the previous iteration
@@ -399,7 +387,7 @@ def CheckBlackIntersection(firstFeatures, firstBox, secondFeatures, secondBox):
     pastMerged = secondFeatures[pastIntersect[2]:pastIntersect[3]+1, pastIntersect[0]:pastIntersect[1]+1]
     # If even one in currentMerged or pastMerged has a non-blank feature, return False else return True
     # If currentMerged has non-blank features or pastMerged has non-blank features, return False else return True
-    return not np.logical_or(np.any(currentMerged[:, :, 5]!=0), np.any(pastMerged[:, :, 5]!=0))
+    return not np.logical_or(np.any(currentMerged[:, :, 8]!=0), np.any(pastMerged[:, :, 8]!=0))
 
 
 def TryToMergeFeatures(imgsFeatures, currentImgFeatures, matchedLabels, currentMergedFeatures, pastMergedFeatures, currentMatchedLabelsAssoc, currentRelative,
@@ -908,8 +896,9 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
             imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
                                            type2Archives[-1], currentRedundancyColorer, pastRedundancyColorer,
                                              currentImgFeatures, THRESHOLD1)
-            testing.ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
+            # testing.ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
     retVal = [{'img': np.where(CC['img'] > 0, 0, 255).astype(np.uint8), 'type': CC['type']} for pic in imgsFeatures for CC in pic]
+    testing.WriteColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
     # for img in retVal:
     #     print(img['type'])
     #     cv.imshow('img', img['img'].astype(np.uint8))
@@ -930,8 +919,11 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
         # #     print(np.any(np.logical_and(redundancyDrawer[i] != 255, redundancyDrawer[i] != 0)))
 
 redundancyCounter = 2
+
+filename = 'learning-single.pkl'
+fit = joblib.load(filename)
+
 def main(imgsLabels):
-    global redundancyCounter
     redundancyDrawer = []
     currentRedundancyColorer = []
     pastRedundancyColorer = []

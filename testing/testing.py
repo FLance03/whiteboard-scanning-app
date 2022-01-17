@@ -5,7 +5,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pandas as pd
 
-dir = 'testing/pics and texts/'
+# dir = 'testing/pics and texts/'
+dir = './'
 
 def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
     dim = None
@@ -20,7 +21,7 @@ def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
         r = width / float(w)
         dim = (width, int(h * r))
 
-    return cv.resize(image, dim, interpolation=inter)
+    return cv.resize(image, dim, interpolation=cv.INTER_AREA)
 
 def WriteFile(someObject, pretty=False):
     with open(dir + 'print2.txt', 'w') as out:
@@ -122,6 +123,7 @@ def ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseL
     uniqueLabels = np.unique(redundancyColorer)
     maxLabel = np.max(uniqueLabels)
     uniqueLabelsLen = len(uniqueLabels)
+    wholePics = []
     if maxLabel > 1:
         # Remap labels starting at label 2 by the element half array size away from it Ex: [0,1,2,3,4,5] -> [0,1,4,2,5,3]
         mapLabels = np.insert(uniqueLabels[:(uniqueLabelsLen - 1)//2 + 1],
@@ -145,9 +147,19 @@ def ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseL
             # currImg[imgsPhraseLabels[i].nonzero()] = (255, 255, 255)
             wholePic = np.where(np.logical_and(redundancyColorer[i, :, :, np.newaxis]!=0, currImg==255),
                                 colored, currImg)
+            wholePics.append(wholePic)
             # cv.imshow('Colorer: ' + str(i), wholePic)
-        # cv.waitKey()
-        # cv.destroyAllWindows()
+        cv.waitKey()
+        cv.destroyAllWindows()
+    return wholePics
+
+def WriteColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels):
+    # wholePics = ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
+    wholePics = ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
+    np.savez('output.npz', labels=np.concatenate((currentRedundancyColorer, pastRedundancyColorer), axis=0).astype(np.uint8)
+                            , colors=np.array(wholePics))
+    # for imgNum, wholePic in enumerate(wholePics):
+    #     cv.imwrite(str(imgNum) + '.png', wholePic)
 
 def Summarize(data):
     df = pd.DataFrame(data, columns=['Values'])

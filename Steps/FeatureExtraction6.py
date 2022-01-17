@@ -9,7 +9,7 @@ from Steps import (SaturationAndOutlier2 as Step2,
 from testing import testing
 
 # The number of rows in one chunks is 2*ROW_OVERLAP_SIZE and overlaps half of the rows (ROW_OVERLAP_SIZE)
-ROW_OVERLAP_SIZE = 2
+ROW_OVERLAP_SIZE = 3
 COL_OVERLAP_SIZE = 5
 COL_WINDOW_SIZE = 10
 
@@ -47,6 +47,7 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
         meanBlack = []
         blackDensity = []
         numColBlack = []
+        numNonBlankCols = COL_WINDOW_SIZE
         # Simple linear reg for the highest and lowest black pixels and also for their mean
         #    also records the mean black density among all the columns and the mean number of black pixels
         #    last index (each row) records whether there were black pixels (0 for no 1 for partial 2 for complete)
@@ -55,23 +56,24 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
             for rowInd in range(rowSize):
                 if window[rowInd][colInd] == labelNum:
                     # Iterating from the top to bottom with this for loop starts with 0 at the highest
-                    #   and increasing instead of rowSize - 1 and decreasing
-                    highestBlack.append([colInd, rowSize - rowInd - 1])
+                    #   and increasing instead of rowSize and decreasing
+                    highestBlack.append([colInd, rowSize - rowInd])
                     break
             else:
+                numNonBlankCols -= 1
                 # No black pixel found in the current column, therefore, checking starting bottom is useless
                 continue
             for rowInd in range(rowSize-1, -1, -1):
                 # Iterate from last row going up but still, at the given index, change it
-                #   to something that starts at rowSize - 1 and decreasing
+                #   to something that starts at rowSize and decreasing
                 if window[rowInd][colInd] == labelNum:
-                    lowestBlack.append([colInd, rowSize - rowInd - 1])
+                    lowestBlack.append([colInd, rowSize - rowInd])
                     break
             # Get the black pixel density. Since the continue statement above was not reached, we can be assured that
             #   a new element was appended to highestBlack (which in turn appended to lowestBlack) which induced the
             #   break statement
             blackCount, totalCount = 0, 0
-            for rowInd in range(rowSize - highestBlack[-1][1] - 1, rowSize - lowestBlack[-1][1]):
+            for rowInd in range(rowSize - highestBlack[-1][1], rowSize - lowestBlack[-1][1] + 1):
                 # Since each index 1 column of both highestBlack and lowestBlack counts from bottom to top, transform
                 #   back to counting from top to bottom. Furthermore, since it holds the index (not len), stop adds by 1
                 if window[rowInd][colInd] == labelNum:
@@ -80,7 +82,7 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
             blackDensity.append(blackCount/totalCount)
             numColBlack.append(blackCount)
         if len(highestBlack) == 0:
-            for i in range(6):
+            for i in range(9):
                 # No black pixels in all columns
                 # We can check the last element which holds the info of the average number of
                 #   black pixels to exclude these
@@ -97,6 +99,9 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
                 features[-1].append(0), features[-1].append(0), features[-1].append(0)
             features[-1].append(sum(blackDensity) / COL_WINDOW_SIZE)
             features[-1].append(sum(numColBlack) / COL_WINDOW_SIZE)
+            features[-1].append(np.std(numColBlack))
+            features[-1].append(np.std(numColBlack + [0] * (COL_WINDOW_SIZE - numNonBlankCols)))
+            features[-1].append(numNonBlankCols)
             features[-1].append(2) if len(highestBlack) > 1 else features[-1].append(1)
     assert indStart + 1 == stop, "Window did not exactly divide"
     features = np.array(features, dtype=np.float32)
@@ -112,7 +117,7 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
                 changeFeatures.append(np.r_[features[ind, :-1] - features[ind - 1, :-1], [2]])
             count = 1
         else:
-            changeFeatures.append([0 for _ in range(6)])
+            changeFeatures.append([0 for _ in range(9)])
     changeFeatures = np.array(changeFeatures, dtype=np.float32)
     return features, changeFeatures
 
@@ -122,7 +127,7 @@ def main(labels, labelNum):
     labels = np.where(labels==labelNum, 1, 0)
     # Step5.GetLabelsInfo() should return only one row of the 2d array where the first 4
     #    elements are left, right, top, and bottom of the rectangle
-    assert len(Step5.GetLabelsInfo(labels)) == 1, "Two different labels in labels"
+    assert len(Step5.GetLabelsInfo(labels)) == 1, "Two different labels in labels: "
     left, right, top, bottom, *_ = labelInfo = Step5.GetLabelsInfo(labels)[0]
     start = top
     # The number of rows in one chunks is 2*ROW_OVERLAP_SIZE and overlaps half of the rows (ROW_OVERLAP_SIZE)

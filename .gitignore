@@ -7,7 +7,10 @@ __pycache__/
 *.PNG
 *.mp4
 *.mkv
+*.pkl
 testing/automation/timestamps.txt
+CropPic.py
+MakeCSV.py
 Server/node_modules/.bin/mime
 Server/node_modules/.bin/mime.cmd
 Server/node_modules/.bin/mime.ps1

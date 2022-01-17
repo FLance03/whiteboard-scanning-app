@@ -34,9 +34,9 @@ def ComputeMedianError(cells, random):
 def SplitIntoCells(img, width=15, height=15):
     # Returns a 2D list of ndarrays where each ndarray contains the usual 3D opencv data for an image
     cells = []
-    for x in range(0,img.shape[0],height):
+    for x in range(0, img.shape[0], height):
         cells.append([])
-        for y in range(0,img.shape[1],width):
+        for y in range(0, img.shape[1], width):
             endHeight = x+height
             endWidth = y+width
             if endHeight > img.shape[0]:
@@ -44,6 +44,8 @@ def SplitIntoCells(img, width=15, height=15):
             if endWidth > img.shape[1]:
                 endWidth = img.shape[1]
             cells[-1].append(np.array(img[x:endHeight,y:endWidth]))
+    if len(cells) == 0:
+        cells = [[img]]
     return cells
 
 
@@ -105,7 +107,7 @@ def main(img, CELLGROUPSIZE = 70, CELLSIZE = 15):
         for cell in cellRow:
             # Reshape to "ravel" since difference between height and width does not matter.
             # Partition at the 75% then get the mean from the top 75%
-            flatCell = cell.reshape(-1,3)
+            flatCell = cell.reshape(-1, 3)
             topQuartile = len(flatCell) - len(flatCell)//4
             if len(flatCell) < 4:
                 top25LumiCells[-1].append(

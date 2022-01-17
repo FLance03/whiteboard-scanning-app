@@ -19,7 +19,7 @@ anded = []
 imgsLabels = []
 i = 0
 while True:
-    img = cv.imread('./Server/' + str(i) + '.png')
+    img = cv.imread('./Server/' + str(i) + '.jpg')
     if img is None:
         break
     # cv.imshow(str(i), testing.ResizeWithAspectRatio(img, height=500))
@@ -34,24 +34,23 @@ for ind, testImage in enumerate(testImages):
     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
     # cv.waitKey()
     # cv.destroyAllWindows()
-    img = Step1.Preprocessing1(img)
-    cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
-    cv.waitKey()
-    cv.destroyAllWindows()
-#     img = Step2.main(img)
-#     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
-#     # cv.waitKey()
-#     # cv.destroyAllWindows()
-#     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-#     gray = cv.resize(gray, dsize=(500, 500), interpolation=cv.INTER_LINEAR)
-#     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
-#     bw = bw[15:-15]
-#     # anded.append(np.where(bw == 0, 1, 0))
-#     # cv.imshow(str(ind + 1), bw)
-#     # Remove the possible lines from the blackboard edges
-#     # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
-#     imgsLabels.append(Step5.main(bw))
-# listCC = Step7.main(imgsLabels)
+    # img = Step1.Preprocessing1(img)
+    # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
+    # cv.waitKey()
+    # cv.destroyAllWindows()
+    img = Step2.main(img)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    gray = cv.resize(gray, dsize=(500, 500), interpolation=cv.INTER_AREA)
+    _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
+    bw = bw[15:-15]
+    # anded.append(np.where(bw == 0, 1, 0))
+    # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
+    # cv.waitKey()
+    # cv.destroyAllWindows()
+    # Remove the possible lines from the blackboard edges
+    # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
+    imgsLabels.append(Step5.main(bw))
+listCC = Step7.main(imgsLabels)
 # Step8.ConvertToDocx(listCC)
 
 
