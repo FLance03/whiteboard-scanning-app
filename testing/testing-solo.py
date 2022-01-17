@@ -9,9 +9,9 @@ def onclick(e):
 def onrelease(e):
     print('{x}, {y}'.format(x=int(e.xdata), y=int(e.ydata)))
 
-# img = cv.imread('11.png')
-data = np.load('output.npz')['data']
-img = data[8]
+img = cv.imread('0p.jpg')
+# data = np.load('output.npz')['data']
+# img = data[8]
 # retImg = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
 # for r, row in enumerate(img):
 #     for c, col in enumerate(row):

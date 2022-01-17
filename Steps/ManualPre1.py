@@ -2,20 +2,20 @@ import cv2 as cv
 import numpy as np
 import math
 
-# import testing as testing
+import testing as testing
 
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
 
 # - Change HERE!!!!!=
-topLpt = (0, 584)
-topRpt = (2973, 990)
-botLpt = (0, 5029)
-botRpt = (2973, 3949)
-topLpt, topRpt, botLpt, botRpt = (0, 1081), (2414, 497), (0, 4256), (2414, 5310)
+# topLpt = (0, 8)
+# topRpt = (1167, 8)
+# botLpt = (0, 693)
+# botRpt = (1167, 716)
+topLpt, topRpt, botLpt, botRpt = (1, 580), (2983, 985), (0, 5027), (2970, 3949)
 
-imageNameInput = "pic1"
-imageNameOutput = "test1"
+imageNameInput = "1"
+imageNameOutput = "0a"
 
 def empty():
     pass
@@ -69,16 +69,16 @@ def findLinePoints(p1, p2, width):
 # cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 # cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 img = cv.imread('./'+imageNameInput+'.jpg')
-# testing.PlotIt(img)
-width = 5000
-=======
-img = cv.imread('images/'+imageNameInput+'.png')
-cv.imshow(img)
 testing.PlotIt(img)
-width = img.shape[1]
->>>>>>> ba07f3beb80e5d19e85b8ef7537e26e6e714e56d
+width = 5000
+# =======
+# img = cv.imread('images/'+imageNameInput+'.png')
+# cv.imshow(img)
+# testing.PlotIt(img)
+# width = img.shape[1]
+# >>>>>>> ba07f3beb80e5d19e85b8ef7537e26e6e714e56d
 absWidth = 10000
 # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 # blur = cv.GaussianBlur(gray, (5,5), 0) 

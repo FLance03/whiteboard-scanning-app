@@ -42,6 +42,9 @@ for ind, testImage in enumerate(testImages):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     gray = cv.resize(gray, dsize=(500, 500), interpolation=cv.INTER_AREA)
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
+    cv.imwrite(str(ind) + 'p.jpg', bw)
+    cv.imwrite(str(ind) + 'n.jpg', bw)
+    cv.imwrite(str(ind) + 'o.jpg', bw)
     bw = bw[15:-15]
     # anded.append(np.where(bw == 0, 1, 0))
     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))

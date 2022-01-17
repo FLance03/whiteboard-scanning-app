@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
-import Steps.SaturationAndOutlier2 as Step2
+# import Steps.SaturationAndOutlier2 as Step2
 
 
 def PlotIt(img, title=None):
