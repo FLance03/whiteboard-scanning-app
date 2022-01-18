@@ -2,19 +2,17 @@ import numpy as np
 import cv2 as cv
 
 
-def GetErrors(evaluation, output):
-    blackPixels = (output == 0).all(axis=2)
+def GetPrecision(evaluation, output):
+    blackPixels = (output < 75).all(axis=2)
     # Make sure its colored clearly
     # evaluatedPixels = (np.max(evaluation, axis=2) - np.min(evaluation, axis=2)) > 100
-    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 250).any(axis=2))
+    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 200).any(axis=2))
     # Include for testing only the black pixels of the output image and those that are properly colored on evaluation
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
     # Get the dominant color of each pixel of the evaluated image
-    evaluation = np.argmax(evaluation, axis=2)
-
-    true = np.sum(np.logical_and(includedForTesting, evaluation == 0))
-    false = np.sum(np.logical_and(includedForTesting, evaluation == 2))
+    true = np.sum(np.logical_and(includedForTesting, evaluation[:, :, 0] > evaluation[:, :, 2]))
+    false = np.sum(np.logical_and(includedForTesting, evaluation[:, :, 2] > evaluation[:, :, 0]))
     return true, false
 
     # # Count the number of pixels where it evalutes to blue and labeled as redundant
@@ -29,6 +27,21 @@ def GetErrors(evaluation, output):
     # # Count the number of pixels where it evalutes to red and labeled as not redundant
     # falseNegative = np.sum(np.logical_and(includedForTesting, np.logical_and(evaluation==0, output==1)))
 
+def GetRecall(positive, evaluation, output):
+    blackPixels = (output < 75).all(axis=2)
+    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 240).any(axis=2))
+    includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
+
+    positivePixels = np.logical_and((positive > 75).any(axis=2), (positive < 240).any(axis=2))
+    positiveBlue = positive[:, :, 0] > positive[:, :, 2]
+    correctRedundancy = np.logical_and(positivePixels, positiveBlue)
+
+    intersection = np.logical_and(includedForTesting, correctRedundancy)
+    # evaluated - intersection = evaluated and not intersection
+    not_found = np.logical_and(includedForTesting, np.logical_not(intersection))
+    return np.sum(not_found)
+
+
 img_num = 0
 while True:
     output = cv.imread(str(img_num) + 'o.jpg')
@@ -36,6 +49,10 @@ while True:
     negative = cv.imread(str(img_num) + 'n.jpg')
     if output is None:
         break
-    print("Image: {0}, TP: {1}, FP: {2}".format(img_num, *GetErrors(positive, output)))
-    print("Image: {0}, TN: {1}, FN: {2}".format(img_num, *GetErrors(negative, output)))
+    tp, fp = GetPrecision(positive, output)
+    fn = GetRecall(positive, negative, output)
+    precision, recall = tp / (tp + fp), tp / (tp + fn) if tp != 0 or fn != 0 else np.nan
+    print("Image: {0}, TP: {1}, FP: {2}, FN: {3}, precision: {4}, recall: {5}"
+                        .format(img_num, tp, fp, fn, precision, recall))
+    # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
     img_num += 1

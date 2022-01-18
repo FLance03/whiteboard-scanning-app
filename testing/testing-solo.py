@@ -9,7 +9,7 @@ def onclick(e):
 def onrelease(e):
     print('{x}, {y}'.format(x=int(e.xdata), y=int(e.ydata)))
 
-img = cv.imread('0p.jpg')
+img = cv.imread('0.png')
 # data = np.load('output.npz')['data']
 # img = data[8]
 # retImg = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)

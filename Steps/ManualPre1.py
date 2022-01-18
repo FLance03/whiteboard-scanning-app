@@ -1,16 +1,38 @@
 import cv2 as cv
 import numpy as np
 import math
+from matplotlib import pyplot as plt
+
 
 import testing as testing
+
+start_x = 0
+start_y = 0
+def onclick(e):
+    global start_x, start_y
+    start_x, start_y = int(e.xdata), int(e.ydata)
+def onrelease(e):
+    if e.xdata is not None and e.ydata is not None:
+        x = int(e.xdata)
+        y = int(e.ydata)
+        if (x, y) == (start_x, start_y):
+            print('({x}, {y}), '.format(x=int(e.xdata), y=int(e.ydata)), end='')
 
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
 # - Change HERE!!!!!=
-topLpt, topRpt, botLpt, botRpt = (0, 8), (1166, 9), (0, 693), (1166, 716)
+topLpt, topRpt, botLpt, botRpt = (0, 17), (1136, 16), (0, 705), (1137, 708),
 
-imageNameInput = "pic1"
-imageNameOutput = "0a"
+imageNameInput = "4.png"
+imageNameOutput = "4a.png"
+img = cv.imread('./'+imageNameInput)
+
+# fig, ax = plt.subplots()
+# plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
+# plt.title('Image')
+# fig.canvas.mpl_connect('button_press_event', onclick)
+# fig.canvas.mpl_connect('button_release_event', onrelease)
+# plt.show()
 
 def empty():
     pass
@@ -64,9 +86,6 @@ def findLinePoints(p1, p2, width):
 # cv.createTrackbar("minLineLength", "Houghlines", 0, 1000, empty)
 # cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
-# <<<<<<< HEAD
-img = cv.imread('./images/'+imageNameInput+'.jpg')
-testing.PlotIt(img)
 width = 5000
 # =======
 # img = cv.imread('images/'+imageNameInput+'.png')
@@ -146,6 +165,6 @@ while True:
     cv.imshow("res", resize(res))
     # cv.imshow("morph", resize(morph))
     cv.imshow("warped", resize(warped))
-    cv.imwrite(imageNameOutput+'.jpg',warped)
+    cv.imwrite(imageNameOutput,warped)
     if cv.waitKey(0) & 0xFF == ord('q'):
         break

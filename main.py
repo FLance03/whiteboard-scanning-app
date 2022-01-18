@@ -19,7 +19,7 @@ anded = []
 imgsLabels = []
 i = 0
 while True:
-    img = cv.imread('./Server/' + str(i) + '.jpg')
+    img = cv.imread('./Server/' + str(i) + '.png')
     if img is None:
         break
     # cv.imshow(str(i), testing.ResizeWithAspectRatio(img, height=500))
@@ -34,10 +34,11 @@ for ind, testImage in enumerate(testImages):
     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
     # cv.waitKey()
     # cv.destroyAllWindows()
-    # img = Step1.Preprocessing1(img)
-    # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
-    # cv.waitKey()
-    # cv.destroyAllWindows()
+    if ind not in [1, 4]:
+        img = Step1.Preprocessing1(img)
+        # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
+        # cv.waitKey()
+        # cv.destroyAllWindows()
     img = Step2.main(img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     gray = cv.resize(gray, dsize=(500, 500), interpolation=cv.INTER_AREA)
@@ -54,6 +55,7 @@ for ind, testImage in enumerate(testImages):
     # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
     imgsLabels.append(Step5.main(bw))
 listCC = Step7.main(imgsLabels)
-# Step8.ConvertToDocx(listCC)
+Step8.ConvertToDocx(listCC)
+print('Time: ', time() - startTime)
 
 

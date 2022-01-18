@@ -1,1 +1,2 @@
 - not lessening the quality (currently all images must be the same height and that transformed image is used as the output image)
+- if there is no redundant between pictures it still chooses because median

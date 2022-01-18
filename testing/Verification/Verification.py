@@ -56,20 +56,23 @@ for current_num, current_img in enumerate(current):
         cleaned_current_color = colors[current_num]
         # (cleaned_current_color != [0, 0, 0]).all(axis=2) outputs a 2d boolean array and is used to index a 3d array
         cleaned_current_color[(cleaned_current_color != [0, 0, 0]).any(axis=2)] = [255, 255, 255]
-        cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [255, 0, 0]
+        cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [0, 255, 0]
         for past_num in range(current_num):
+            test_num = 3
+            if past_num != test_num and current_num != test_num:
+                continue
             past_img = past[past_num]
             if (past_img == current_label).any():
                 filter_past = past_img == current_label
                 cleaned_past_color = colors[past_num + len(labels)//2]
                 cleaned_past_color[(cleaned_past_color != [0, 0, 0]).any(axis=2)] = [255, 255, 255]
-                cleaned_past_color[np.logical_and((cleaned_past_color == [255, 255, 255]).all(axis=2), filter_past)] = [0, 0, 255]
+                cleaned_past_color[np.logical_and((cleaned_past_color == [255, 255, 255]).all(axis=2), filter_past)] = [0, 255, 0]
             #     np.logical_or((current_img == [0, 0, 0]).all(axis=2),
             # np.logical_or((current_img == [255, 255, 255]).all(axis=2), (current_img == color).all(axis=2)))
                 # (current_img == color).all(axis=2) returns a 2d array from a 3d so add new axis in filter_img
-                cv.imshow("Current: " + str(current_num), cleaned_current_color.astype(np.uint8))
-                cv.imshow("Past: " + str(past_num + len(labels)//2), cleaned_past_color.astype(np.uint8))
-                print("Current: {}, Past: {}".format(current_num, past_num + len(labels)//2))
+                cv.imshow("" + str(current_num), cleaned_current_color.astype(np.uint8))
+                cv.imshow("" + str(past_num), cleaned_past_color.astype(np.uint8))
+                print("Current: {}, Past: {}, Label Num: {}".format(current_num, past_num, current_label))
                 cv.waitKey()
                 cv.destroyAllWindows()
 
