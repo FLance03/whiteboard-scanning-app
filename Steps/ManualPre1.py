@@ -140,7 +140,7 @@ while True:
     
     # Computing the perspective transform matrix + application
     M = cv.getPerspectiveTransform(rect, dst)
-    warped = cv.warpPerspective(wrp, M, (halfline, maxHeight))
+    warped = cv.warpPerspective(wrp, M, (maxWidth, maxHeight))
 
     # Display
     cv.imshow("res", resize(res))
