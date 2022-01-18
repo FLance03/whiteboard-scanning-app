@@ -68,7 +68,7 @@ def findLinePoints(p1, p2, width):
     return ((x1, y1), (x2, y2))
 
 # Changing the threshold depending on resolution
-img = cv.imread('images/'+imageNameInput+'.png')
+img = cv.imread('images/'+imageNameInput+'.jpg')
 width = img.shape[1]
 height = img.shape[0]
 absWidth = 10000

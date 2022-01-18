@@ -6,22 +6,17 @@ import testing as testing
 
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
-
 # - Change HERE!!!!!=
-# topLpt = (0, 8)
-# topRpt = (1167, 8)
-# botLpt = (0, 693)
-# botRpt = (1167, 716)
-topLpt, topRpt, botLpt, botRpt = (1, 580), (2983, 985), (0, 5027), (2970, 3949)
+topLpt, topRpt, botLpt, botRpt = (0, 8), (1166, 9), (0, 693), (1166, 716)
 
-imageNameInput = "1"
+imageNameInput = "pic1"
 imageNameOutput = "0a"
 
 def empty():
     pass
 
 def resize(img):
-    scale_percent = 15 # percent of original size
+    scale_percent = 50 # percent of original size
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -70,7 +65,7 @@ def findLinePoints(p1, p2, width):
 # cv.createTrackbar("maxLineGap", "Houghlines", 0, 1000, empty)
 
 # <<<<<<< HEAD
-img = cv.imread('./'+imageNameInput+'.jpg')
+img = cv.imread('./images/'+imageNameInput+'.jpg')
 testing.PlotIt(img)
 width = 5000
 # =======
@@ -151,6 +146,6 @@ while True:
     cv.imshow("res", resize(res))
     # cv.imshow("morph", resize(morph))
     cv.imshow("warped", resize(warped))
-    cv.imwrite(imageNameOutput+'.jpg',resize(warped))
+    cv.imwrite(imageNameOutput+'.jpg',warped)
     if cv.waitKey(0) & 0xFF == ord('q'):
         break
