@@ -77,9 +77,6 @@ def Preprocessing1(img):
     res = img.copy()
     wrp = img.copy()
 
-    cv.imshow('preprocess', resize(canny))
-    cv.waitKey()
-
     lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     # Default values

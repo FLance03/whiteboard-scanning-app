@@ -18,7 +18,9 @@ def ConvertToDocx(ListCC):
             textlines += ' '+pytesseract.image_to_string(CC['img'], config=custom_config)
         else:
             # Save to '/CC/'
-            cv.imwrite('./CC/'+str(num)+'.png', CC['img'])
+            # print('type: ', CC['type'])
+            flag = cv.imwrite('./CC/'+str(num)+'.png', CC['img'])
+            # print('flag: ', flag)
             num+=1
     
     # equation to remove non-alphanumeric characters from the textlines
@@ -34,7 +36,7 @@ def ConvertToDocx(ListCC):
     cell = rowCellsA[2]
     paragraph = cell.add_paragraph()
     cell_r = paragraph.add_run()
-    if num != 0:
+    if num > 0:
         for x in range(num):
             cell_r.add_picture('./CC/'+str(x)+'.png')
     cellA = table.cell(2,0)
