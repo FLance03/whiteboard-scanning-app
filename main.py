@@ -34,7 +34,7 @@ for ind, testImage in enumerate(testImages):
     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
     # cv.waitKey()
     # cv.destroyAllWindows()
-    if ind not in [1, 4]:
+    if ind not in []:
         img = Step1.Preprocessing1(img)
         # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
         # cv.waitKey()

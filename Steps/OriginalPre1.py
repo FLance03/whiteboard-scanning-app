@@ -69,6 +69,7 @@ def findLinePoints(p1, p2, width):
 
 # Changing the threshold depending on resolution
 img = cv.imread('images/'+imageNameInput+'.jpg')
+# img = cv.imread('0.png')
 width = img.shape[1]
 height = img.shape[0]
 absWidth = 10000
@@ -90,13 +91,9 @@ gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 blur = cv.GaussianBlur(gray, (7,7), 0) 
 
 # Create structuring elements
-cols = img.shape[1]
+cols = width
 horizontal_size = cols // 30
 horizontalStructure = cv.getStructuringElement(cv.MORPH_RECT, (horizontal_size, 1))
-
-# erode and dilate operations
-# morph = cv.erode(blur, horizontalStructure)
-# morph = cv.dilate(morph, horizontalStructure)
 
 # apply close to connect the white areas
 morph = cv.morphologyEx(blur, cv.MORPH_OPEN, horizontalStructure)
@@ -106,14 +103,6 @@ morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, horizontalStructure)
 sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
 abs_grad_x = cv.convertScaleAbs(sobelx)
 canny = cv.Canny(abs_grad_x, cv.CV_64F, 75, 0)
-
-# while True:
-#    cv.imshow('blur', resize(blur))
-#    cv.imshow('morph', resize(morph))
-#    cv.imshow('abs_grad_x', resize(abs_grad_x))
-#    cv.imshow('canny', resize(canny))
-#    if cv.waitKey(0) & 0xFF == ord('q'):
-#         break
 
 while True:
     res = img.copy()
@@ -194,8 +183,6 @@ while True:
 
     # Warp Perspective and resize
 
-    # I got this from interwebz, idk how to switch bl and br so that the warp doesn't break
-    # am stuped help
     rect = initRect(topline, (botline[1], botline[0]))
     (tl, tr, br, bl) = rect
     print("Rect:", rect)
@@ -226,6 +213,7 @@ while True:
     cv.imshow("res", resize(res))
     # cv.imshow("morph", resize(morph))
     cv.imshow("sobelx", resize(abs_grad_x))
+    cv.imshow("canny", resize(canny))
     cv.imshow("morph", resize(morph))
     cv.imshow("warped", resize(warped))
     cv.imwrite(imageNameOutput+'.jpg', warped)
