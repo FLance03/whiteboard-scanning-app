@@ -36,9 +36,9 @@ for ind, testImage in enumerate(testImages):
     # cv.destroyAllWindows()
     if ind not in []:
         img = Step1.Preprocessing1(img)
-        # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
-        # cv.waitKey()
-        # cv.destroyAllWindows()
+        cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
+        cv.waitKey()
+        cv.destroyAllWindows()
     img = Step2.main(img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     gray = cv.resize(gray, dsize=(500, 500), interpolation=cv.INTER_AREA)
@@ -57,5 +57,3 @@ for ind, testImage in enumerate(testImages):
 listCC = Step7.main(imgsLabels)
 Step8.ConvertToDocx(listCC)
 print('Time: ', time() - startTime)
-
-
