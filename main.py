@@ -19,7 +19,7 @@ anded = []
 imgsLabels = []
 i = 0
 while True:
-    img = cv.imread('./Server/' + str(i) + '.png')
+    img = cv.imread('./Server/' + str(i) + '.jpg')
     if img is None:
         break
     # cv.imshow(str(i), testing.ResizeWithAspectRatio(img, height=500))
@@ -34,15 +34,22 @@ for ind, testImage in enumerate(testImages):
     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
     # cv.waitKey()
     # cv.destroyAllWindows()
-    if ind not in []:
-        img = Step1.Preprocessing1(img)
-        cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
-        cv.waitKey()
-        cv.destroyAllWindows()
+    # if ind not in [1]:
+    img = Step1.Preprocessing1(img)
+    cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
+    # cv.waitKey()
+    # cv.destroyAllWindows()
     img = Step2.main(img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    gray = cv.resize(gray, dsize=(500, 500), interpolation=cv.INTER_AREA)
+    gray = cv.resize(gray, dsize=(int(gray.shape[1] * 500 / float(gray.shape[0])), 500), interpolation=cv.INTER_AREA)
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
+    kernel = np.ones((5, 5),np.uint8)
+    cv.imshow('Before', testing.ResizeWithAspectRatio(img, height=500))
+    bw = cv.morphologyEx(bw, cv.MORPH_CLOSE, kernel)
+    bw = cv.morphologyEx(bw, cv.MORPH_OPEN, kernel)
+    cv.imshow('After', testing.ResizeWithAspectRatio(img, height=500))
+    cv.waitKey()
+    cv.destroyAllWindows()
     cv.imwrite(str(ind) + 'p.jpg', bw)
     cv.imwrite(str(ind) + 'n.jpg', bw)
     cv.imwrite(str(ind) + 'o.jpg', bw)

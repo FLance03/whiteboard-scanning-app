@@ -23,8 +23,8 @@ def onrelease(e):
 # - Change HERE!!!!!=
 topLpt, topRpt, botLpt, botRpt = (0, 17), (1136, 16), (0, 705), (1137, 708),
 
-imageNameInput = "4.png"
-imageNameOutput = "4a.png"
+imageNameInput = "1.png"
+imageNameOutput = "1.png"
 img = cv.imread('./'+imageNameInput)
 
 # fig, ax = plt.subplots()

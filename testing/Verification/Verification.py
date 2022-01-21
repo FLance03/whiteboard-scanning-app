@@ -58,7 +58,7 @@ for current_num, current_img in enumerate(current):
         cleaned_current_color[(cleaned_current_color != [0, 0, 0]).any(axis=2)] = [255, 255, 255]
         cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [0, 255, 0]
         for past_num in range(current_num):
-            test_num = 20
+            test_num = 4
             if past_num != test_num and current_num != test_num:
                 continue
             past_img = past[past_num]
