@@ -50,7 +50,15 @@ def Preprocessing1(img):
     # Values for Houghlines here
     width = img.shape[1]
     height = img.shape[0]
-    threshold = 1800 if height >= 1080 and width >= 1920 else 800
+    # Really need to find a formula for threshold
+    if height >= 1080 or width >= 1920:
+        threshold = 1800
+    elif height >= 700 or width >= 1200:
+        threshold = 800
+    elif height >= 500 or width >= 500:
+        threshold = 600
+    else:
+        threshold = 400
     lines_number = 0
     minLineLength = 0
     maxLineGap = 0
@@ -58,7 +66,6 @@ def Preprocessing1(img):
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blur = cv.GaussianBlur(gray, (7,7), 0) 
-    print('threshold: ', threshold)
 
     # Create structuring elements
     cols = width
@@ -80,7 +87,7 @@ def Preprocessing1(img):
     lines = cv.HoughLines(canny, 2, np.pi / 180, threshold, lines_number, minLineLength, maxLineGap)
 
     # Default values
-    halfline = int(width/2)
+    halfline = int(height/2)
     botline = ((absWidth, absWidth), (absWidth, absWidth))
     topline = ((0,0), (0,0))
 
@@ -102,8 +109,10 @@ def Preprocessing1(img):
             # Instead of comparing y[0], compare middle point y of the line??
 
             if pt1[1] < halfline and halfline - pt1[1] < halfline - topline[0][1]:
+                print('new topline:', topline)
                 topline = (pt1, pt2)
             elif pt1[1] > halfline and pt1[1] - halfline < botline[0][1] - halfline:
+                print('new botline:', botline)
                 botline = (pt1, pt2)
 
             # if pt1[1] < halfline:
@@ -120,13 +129,17 @@ def Preprocessing1(img):
             cv.line(res, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
     else:
         print('ERROR: Wasnt able to detect lines after Preprocessing. Change threshold.')
+        botline = ((0, height), (width, height))
+        topline = ((0, 0), (width, 0))
 
     # Might not need to compute for x-axis?
     # if only topline is detected, then calculate botline and vice versa
     if botline == ((absWidth, absWidth), (absWidth, absWidth)) and topline != ((0,0), (0,0)):
-        botline = ((topline[0][0], halfline*2-topline[0][1]), (topline[1][0], halfline*2-topline[1][1]))
+        print('no botline detected')
+        botline = ((topline[0][0], height-topline[0][1]), (topline[1][0], height-topline[1][1]))
     elif topline == ((0,0), (0,0)) and botline != ((absWidth, absWidth), (absWidth, absWidth)):
-        topline = ((topline[1][0], botline[1][1]-halfline), (botline[0][0], botline[0][1]-halfline))
+        print('no topline detected')
+        topline = ((botline[0][0], height-botline[0][1]), (botline[1][0], height-botline[1][1]))
 
     # top line blue, bot line green, halfline teal
     cv.line(res, topline[0], topline[1], (255,0,0), 5, cv.LINE_AA)
@@ -175,19 +188,20 @@ def Preprocessing1(img):
     # Computing the perspective transform matrix + application
     M = cv.getPerspectiveTransform(rect, dst)
     warped = cv.warpPerspective(wrp, M, (maxWidth, maxHeight))
-
-
-    return warped
+    print('threshold: ', threshold)
 
     # Display
     # cv.imshow("res", resize(res))
-    # # cv.imshow("morph", resize(morph))
+    # cv.imshow("morph", resize(morph))
     # cv.imshow("sobelx", resize(abs_grad_x))
     # cv.imshow("canny", resize(canny))
     # cv.imshow("warped", resize(warped))
+
+    return warped
+
     # cv.imwrite(imageNameOutput+'.jpg',resize(warped))
 
-# # test 
+# test 
 # img = cv.imread('0.png')
 # retval = Preprocessing1(img)
 # cv.imshow('retval', resize(retval))
