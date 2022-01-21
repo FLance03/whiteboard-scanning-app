@@ -1,0 +1,5 @@
+Relationship between:
+	- False Positives and Positives
+	- Number of photos and Precision
+	- Number of photos and Recall
+	- Change of Precision and Recall between pics

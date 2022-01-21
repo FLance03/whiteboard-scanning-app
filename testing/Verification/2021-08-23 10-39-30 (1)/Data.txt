@@ -1,0 +1,7 @@
+Time:  212.8755829334259
+
+Image: 0, TP: 2496, FP: 0, FN: 3351, precision: 1.0, recall: 0.426885582349923
+Image: 1, TP: 1742, FP: 2304, FN: 2827, precision: 0.430548690064261, recall: 0.38126504705624864
+Image: 2, TP: 793, FP: 7014, FN: 7951, precision: 0.10157550915844754, recall: 0.0906907593778591
+Image: 3, TP: 1150, FP: 9704, FN: 7446, precision: 0.10595172286714576, recall: 0.1337831549557934
+Image: 4, TP: 0, FP: 2237, FN: 0, precision: 0.0, recall: nan
