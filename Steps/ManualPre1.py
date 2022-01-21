@@ -21,18 +21,18 @@ def onrelease(e):
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
 # - Change HERE!!!!!=
-topLpt, topRpt, botLpt, botRpt = (0, 17), (1136, 16), (0, 705), (1137, 708),
+topLpt, topRpt, botLpt, botRpt = (0, 917), (2987, 598), (0, 4291), (2987, 4829),
 
-imageNameInput = "1.png"
-imageNameOutput = "1.png"
+imageNameInput = "4.jpg"
+imageNameOutput = "4a.jpg"
 img = cv.imread('./'+imageNameInput)
 
-# fig, ax = plt.subplots()
-# plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
-# plt.title('Image')
-# fig.canvas.mpl_connect('button_press_event', onclick)
-# fig.canvas.mpl_connect('button_release_event', onrelease)
-# plt.show()
+fig, ax = plt.subplots()
+plt.imshow(img, 'gray') if len(img.shape) == 2 else plt.imshow(img)
+plt.title('Image')
+fig.canvas.mpl_connect('button_press_event', onclick)
+fig.canvas.mpl_connect('button_release_event', onrelease)
+plt.show()
 
 def empty():
     pass

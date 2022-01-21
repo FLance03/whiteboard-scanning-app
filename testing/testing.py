@@ -145,6 +145,9 @@ def ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseL
             # currImg = np.zeros((*imgsNonTextLabels[i].shape, 3), dtype=np.uint8)
             # currImg[imgsNonTextLabels[i].nonzero()] = (255, 255, 255)
             # currImg[imgsPhraseLabels[i].nonzero()] = (255, 255, 255)
+            currImg = np.pad(currImg, [(0, redundancyColorer.shape[1]-currImg.shape[0]),
+                                       (0, redundancyColorer.shape[2]-currImg.shape[1]), (0, 0)],
+                                      mode='constant', constant_values=0)
             wholePic = np.where(np.logical_and(redundancyColorer[i, :, :, np.newaxis]!=0, currImg==255),
                                 colored, currImg)
             wholePics.append(wholePic)

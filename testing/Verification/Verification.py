@@ -5,6 +5,21 @@ import re
 import numpy as np
 import cv2 as cv
 
+def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
+    dim = None
+    (h, w) = image.shape[:2]
+
+    if width is None and height is None:
+        return image
+    if width is None:
+        r = height / float(h)
+        dim = (int(w * r), height)
+    else:
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    return cv.resize(image, dim, interpolation=cv.INTER_AREA)
+
 # imgs = np.load('output.npz')['data']
 #
 # def imshow_components(labels):
@@ -70,8 +85,8 @@ for current_num, current_img in enumerate(current):
             #     np.logical_or((current_img == [0, 0, 0]).all(axis=2),
             # np.logical_or((current_img == [255, 255, 255]).all(axis=2), (current_img == color).all(axis=2)))
                 # (current_img == color).all(axis=2) returns a 2d array from a 3d so add new axis in filter_img
-                cv.imshow("" + str(current_num), cleaned_current_color.astype(np.uint8))
-                cv.imshow("" + str(past_num), cleaned_past_color.astype(np.uint8))
+                cv.imshow("" + str(current_num), ResizeWithAspectRatio(cleaned_current_color.astype(np.uint8), height=500))
+                cv.imshow("" + str(past_num), ResizeWithAspectRatio(cleaned_past_color.astype(np.uint8), height=500))
                 print("Current: {}, Past: {}, Label Num: {}".format(current_num, past_num, current_label))
                 cv.waitKey()
                 cv.destroyAllWindows()

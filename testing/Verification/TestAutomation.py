@@ -11,8 +11,8 @@ def GetPrecision(evaluation, output):
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
     # Get the dominant color of each pixel of the evaluated image
-    true = np.sum(np.logical_and(includedForTesting, evaluation[:, :, 0] > evaluation[:, :, 2]))
-    false = np.sum(np.logical_and(includedForTesting, evaluation[:, :, 2] > evaluation[:, :, 0]))
+    true = np.sum(np.logical_and(includedForTesting, evaluation[:, :, 0].astype(np.int16) - evaluation[:, :, 2].astype(np.int16) > 50))
+    false = np.sum(np.logical_and(includedForTesting, evaluation[:, :, 2].astype(np.int16) - evaluation[:, :, 0].astype(np.int16) > 50))
     return true, false
 
     # # Count the number of pixels where it evalutes to blue and labeled as redundant
@@ -33,13 +33,13 @@ def GetRecall(positive, evaluation, output):
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
     positivePixels = np.logical_and((positive > 75).any(axis=2), (positive < 240).any(axis=2))
-    positiveBlue = positive[:, :, 0] > positive[:, :, 2]
+    positiveBlue = positive[:, :, 0].astype(np.int16) - positive[:, :, 2].astype(np.int16) > 50
     correctRedundancy = np.logical_and(positivePixels, positiveBlue)
 
     intersection = np.logical_and(includedForTesting, correctRedundancy)
     # evaluated - intersection = evaluated and not intersection
     not_found = np.logical_and(includedForTesting, np.logical_not(intersection))
-    return np.sum(not_found)
+    return np.sum(includedForTesting), np.sum(blackPixels), np.sum(not_found)
 
 
 img_num = 0
@@ -50,9 +50,10 @@ while True:
     if output is None:
         break
     tp, fp = GetPrecision(positive, output)
-    fn = GetRecall(positive, negative, output)
-    precision, recall = tp / (tp + fp), tp / (tp + fn) if tp != 0 or fn != 0 else np.nan
-    print("Image: {0}, TP: {1}, FP: {2}, FN: {3}, precision: {4}, recall: {5}"
-                        .format(img_num, tp, fp, fn, precision, recall))
+    trues, num_black, fn = GetRecall(positive, negative, output)
+    precision, recall = tp / (tp + fp) if trues > 0 else np.nan, tp / (tp + fn) if trues > 0 else np.nan
+    print("Image: {0}\npercent TP: {1}\npercent FP: {2}\npercent FN: {3}\ntrues: {4}\npercent true: {5}\nprecision: {6}\nrecall: {7}"
+                        .format(img_num, tp/num_black, fp/num_black, fn/num_black, trues, trues/num_black, precision, recall))
+    print()
     # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
     img_num += 1

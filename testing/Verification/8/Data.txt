@@ -1,0 +1,6 @@
+1.jpg -> (0, 1400), (2985, 1187), (0, 4076), (2985, 5055), 
+
+Time:  158.71710777282715
+
+Image: 0, TP: 0, FP: 2693, FN: 14024, trues: 14024, precision: 0.0, recall: 0.0
+Image: 1, TP: 0, FP: 2508, FN: 8651, trues: 8651, precision: 0.0, recall: 0.0

@@ -1,0 +1,8 @@
+1.jpg -> (0, 1391), (2986, 1105), (0, 4242), (2986, 5074), 
+
+Time:  243.3228316307068
+
+Image: 0, percent TP: 0.0, percent FP: 0.15423861852433282, percent FN: 0.0, trues: 0, percent true: 0.0, precision: 0.0, recall: nan
+Image: 1, percent TP: 0.0, percent FP: 0.1890381801250499, percent FN: 0.0, trues: 0, percent true: 0.0, precision: 0.0, recall: nan
+Image: 2, percent TP: 0.0, percent FP: 0.20408449715769528, percent FN: 0.5088778159870868, trues: 7251, percent true: 0.5088778159870868, precision: 0.0, recall: 0.0
+Image: 3, percent TP: 0.0, percent FP: 0.13329050907339007, percent FN: 0.34562389593704834, trues: 10761, percent true: 0.34562389593704834, precision: 0.0, recall: 0.0
