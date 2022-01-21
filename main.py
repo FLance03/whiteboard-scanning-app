@@ -64,5 +64,3 @@ for ind, testImage in enumerate(testImages):
 listCC = Step7.main(imgsLabels)
 Step8.ConvertToDocx(listCC)
 print('Time: ', time() - startTime)
-
-
