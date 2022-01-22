@@ -18,7 +18,7 @@ import '../screens/Home.dart';
 
 */
 class SendPhotos {
-  final serverURL = 'http://192.168.0.61:15024';
+  final serverURL = 'http://192.168.0.107:15024';
 
   void sendFiles(BuildContext context, List<File> selectedPhotos) async{
     OverlayEntry _overlayEntry = this._createOverlayEntry(context);
@@ -63,6 +63,7 @@ class SendPhotos {
     List<Uint8List> imageBytes = [];
     List<String> base64String = [];
     // from files to uint8list to base64
+    print("here");
     selectedPhotos = FileHelpers.sortByFileName(selectedPhotos);
     selectedPhotos.forEach((photos) => imageBytes.add(photos.readAsBytesSync()));
     imageBytes.forEach((image) => base64String.add(base64Encode(image)));
