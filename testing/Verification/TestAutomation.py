@@ -8,7 +8,6 @@ def GetPrecision(evaluation, output):
     # evaluatedPixels = (np.max(evaluation, axis=2) - np.min(evaluation, axis=2)) > 100
     evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 200).any(axis=2))
     # Include for testing only the black pixels of the output image and those that are properly colored on evaluation
-    print(blackPixels.shape, evaluatedPixels.shape)
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
     # Get the dominant color of each pixel of the evaluated image
@@ -40,7 +39,7 @@ def GetRecall(positive, evaluation, output):
     intersection = np.logical_and(includedForTesting, correctRedundancy)
     # evaluated - intersection = evaluated and not intersection
     not_found = np.logical_and(includedForTesting, np.logical_not(intersection))
-    return np.sum(includedForTesting), np.sum(blackPixels), np.sum(not_found)
+    return np.sum(includedForTesting), np.sum(not_found)
 
 
 img_num = 0
@@ -51,7 +50,7 @@ while True:
 
     if output is None:
         break
-        
+
     max_height = max(output.shape[0], positive.shape[0], negative.shape[0])
     max_width = max(output.shape[1], positive.shape[1], negative.shape[1])
     if output.shape[0] != max_height or output.shape[1] != max_width:
@@ -65,10 +64,11 @@ while True:
        mode='constant', constant_values=255)
 
     tp, fp = GetPrecision(positive, output)
-    trues, num_black, fn = GetRecall(positive, negative, output)
+    trues, fn = GetRecall(positive, negative, output)
+    num_black = np.sum((output < 75).all(axis=2))
     precision, recall = tp / (tp + fp) if trues > 0 else np.nan, tp / (tp + fn) if trues > 0 else np.nan
-    print("Image: {0}\npercent TP: {1}\npercent FP: {2}\npercent FN: {3}\ntrues: {4}\npercent true: {5}\nprecision: {6}\nrecall: {7}"
-                        .format(img_num, tp/num_black, fp/num_black, fn/num_black, trues, trues/num_black, precision, recall))
+    print("Image: {0}\nTP: {1}\nFP: {2}\nFN: {3}\ntrues: {4}\nink pixels: {5}\nprecision: {6}\nrecall: {7}"
+                        .format(img_num, tp, fp, fn, trues, num_black, precision, recall))
     print()
     # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
     img_num += 1

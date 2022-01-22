@@ -329,6 +329,7 @@ def Recollapse(labels):
     return retLabels
 
 def main(img):
+    display_img = img.copy()
     img = cv.threshold(img, 0, 255, cv.THRESH_OTSU)[1]
     notImg = cv.bitwise_not(img)
 
@@ -341,7 +342,7 @@ def main(img):
     nonTextLabels = np.zeros_like(labels, np.uint8)
 
     PreFilter(labels, copy=False)
-    # coloredLabels = testing.imshow_components(labels)
+    coloredLabels = testing.imshow_components(labels)
 
     labelsInfo = GetLabelsInfo(labels)
     if np.all(labels == 0):
@@ -370,7 +371,7 @@ def main(img):
     textLabelCount = 0
     wordLabelCount = 0
     phraseLabelCount = 0
-    # mimicColoredLabels = coloredLabels.copy()
+    mimicColoredLabels = coloredLabels.copy()
     for count in range(2):
         runningThreshold = 20
         while runningThreshold > 2:
@@ -498,9 +499,10 @@ def main(img):
                             wordLabels[nonzeroY+top, nonzeroX+left] = wordLabelCount
                             # And label the determined text ones with a faster counter
                             textLabels[nonzeroY+top, nonzeroX+left] = textLabelCount
-                            # mimicColoredLabels[nonzeroY+top, nonzeroX+left] = 0
-                            # cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 5, (0, 255, 0), -1)
-                            # cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 3, (0, 0, 255), -1)
+                            mimicColoredLabels[nonzeroY+top, nonzeroX+left] = 0
+                            cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 5, (0, 255, 0), -1)
+                            cv.circle(mimicColoredLabels, ((left+right)//2, (top+bottom)//2), 3, (0, 0, 255), -1)
+                            cv.imwrite('testtt.jpg', mimicColoredLabels)
                             # Same index in inPointsCenters and inPointsInfo relates to the same connected components
                             # Record the said index in deleteOutInd to keep track of which elements in outPoints are to be deleted
                             deleteOutInd.append(head + ind)
@@ -536,18 +538,34 @@ def main(img):
         textLabels, nonTextLabels = PropagateNonTextLabels(textLabels, nonTextLabels)
     wordLabels[textLabels == 0] = 0
     phraseLabels[textLabels == 0] = 0
+
     textLabels = Recollapse(textLabels)
     nonTextLabels = Recollapse(nonTextLabels)
     wordLabels = Recollapse(wordLabels)
     phraseLabels = Recollapse(phraseLabels)
+
+    display_img = np.concatenate((display_img[:, :, np.newaxis], display_img[:, :, np.newaxis], display_img[:, :, np.newaxis]), axis=2).astype(np.uint8)
+
+    labels_info = GetLabelsInfo(textLabels)
+    display_text_img = display_img.copy()
+    for left, right, top, bottom, *_ in labels_info:
+        cv.rectangle(display_text_img, (left, top), (right, bottom), (0, 255, 0), 2)
+    cv.imwrite('text.jpg', display_text_img)
+
+    labels_info = GetLabelsInfo(nonTextLabels)
+    display_figure_img = display_img.copy()
+    for left, right, top, bottom, *_ in labels_info:
+        cv.rectangle(display_figure_img, (left, top), (right, bottom), (0, 255, 0), 2)
+    cv.imwrite('figure.jpg', display_figure_img)
+
+    # cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
+    # cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
     print(time() - start)
     return labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
 
 # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels = main(cv.imread('testing/pics and texts/iotbinarized.jpg', 0))
 #
 #
-# cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
-# cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
 # cv.imshow('Step 5: Words', testing.ResizeWithAspectRatio(testing.imshow_components(wordLabels), width=450))
 # cv.imshow('Step 5: Phrases', testing.ResizeWithAspectRatio(testing.imshow_components(phraseLabels), width=450))
 #
