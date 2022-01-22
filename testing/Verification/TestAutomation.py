@@ -8,6 +8,7 @@ def GetPrecision(evaluation, output):
     # evaluatedPixels = (np.max(evaluation, axis=2) - np.min(evaluation, axis=2)) > 100
     evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 200).any(axis=2))
     # Include for testing only the black pixels of the output image and those that are properly colored on evaluation
+    print(blackPixels.shape, evaluatedPixels.shape)
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
     # Get the dominant color of each pixel of the evaluated image
@@ -47,8 +48,22 @@ while True:
     output = cv.imread(str(img_num) + 'o.jpg')
     positive = cv.imread(str(img_num) + 'p.jpg')
     negative = cv.imread(str(img_num) + 'n.jpg')
+
     if output is None:
         break
+        
+    max_height = max(output.shape[0], positive.shape[0], negative.shape[0])
+    max_width = max(output.shape[1], positive.shape[1], negative.shape[1])
+    if output.shape[0] != max_height or output.shape[1] != max_width:
+        output = np.pad(output, [(0, max_height - output.shape[0]), (0, max_width - output.shape[1]), (0, 0)],
+       mode='constant', constant_values=255)
+    if positive.shape[0] != max_height or positive.shape[1] != max_width:
+        positive = np.pad(positive, [(0, max_height - positive.shape[0]), (0, max_width - positive.shape[1]), (0, 0)],
+       mode='constant', constant_values=255)
+    if negative.shape[0] != max_height or negative.shape[1] != max_width:
+        negative = np.pad(negative, [(0, max_height - negative.shape[0]), (0, max_width - negative.shape[1]), (0, 0)],
+       mode='constant', constant_values=255)
+
     tp, fp = GetPrecision(positive, output)
     trues, num_black, fn = GetRecall(positive, negative, output)
     precision, recall = tp / (tp + fp) if trues > 0 else np.nan, tp / (tp + fn) if trues > 0 else np.nan
