@@ -34,19 +34,17 @@ print("height: ", height)
 for ind, testImage in enumerate(testImages):
     img = testImages[ind]
     assert img is not None
-    cv.imwrite('Original Image.jpg', img)
     # cv.waitKey()
     # cv.destroyAllWindows()
     if ind not in []:
         img = Step1.Preprocessing1(img)
-        cv.imwrite('Rectification.jpg', img)
+        # cv.imshow(str(ind) + '.jpg', testing.ResizeWithAspectRatio(img, height=500))
         # cv.waitKey()
         # cv.destroyAllWindows()
     img = Step2.main(img)
-    cv.imwrite('Saturation.jpg', img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
-    cv.imwrite('Binarization.jpg', bw)
+    cv.imwrite(str(ind) + '.jpg', bw)
     kernel = np.ones((5, 5),np.uint8)
     # cv.imwrite(str(ind) + 'p.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
     # cv.imwrite(str(ind) + 'n.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
@@ -55,7 +53,6 @@ for ind, testImage in enumerate(testImages):
     bw = cv.morphologyEx(bw, cv.MORPH_OPEN, kernel)
     bw = cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA)
     bw = bw[15:-15]
-    cv.imwrite('Noise Reduction.jpg', bw)
     # anded.append(np.where(bw == 0, 1, 0))
     # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
     # cv.waitKey()

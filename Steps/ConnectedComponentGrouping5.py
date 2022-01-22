@@ -544,19 +544,19 @@ def main(img):
     wordLabels = Recollapse(wordLabels)
     phraseLabels = Recollapse(phraseLabels)
 
-    display_img = np.concatenate((display_img[:, :, np.newaxis], display_img[:, :, np.newaxis], display_img[:, :, np.newaxis]), axis=2).astype(np.uint8)
-
-    labels_info = GetLabelsInfo(textLabels)
-    display_text_img = display_img.copy()
-    for left, right, top, bottom, *_ in labels_info:
-        cv.rectangle(display_text_img, (left, top), (right, bottom), (0, 255, 0), 2)
-    cv.imwrite('text.jpg', display_text_img)
-
-    labels_info = GetLabelsInfo(nonTextLabels)
-    display_figure_img = display_img.copy()
-    for left, right, top, bottom, *_ in labels_info:
-        cv.rectangle(display_figure_img, (left, top), (right, bottom), (0, 255, 0), 2)
-    cv.imwrite('figure.jpg', display_figure_img)
+    # display_img = np.concatenate((display_img[:, :, np.newaxis], display_img[:, :, np.newaxis], display_img[:, :, np.newaxis]), axis=2).astype(np.uint8)
+    #
+    # labels_info = GetLabelsInfo(textLabels)
+    # display_text_img = display_img.copy()
+    # for left, right, top, bottom, *_ in labels_info:
+    #     cv.rectangle(display_text_img, (left, top), (right, bottom), (0, 255, 0), 2)
+    # cv.imwrite('text.jpg', display_text_img)
+    #
+    # labels_info = GetLabelsInfo(nonTextLabels)
+    # display_figure_img = display_img.copy()
+    # for left, right, top, bottom, *_ in labels_info:
+    #     cv.rectangle(display_figure_img, (left, top), (right, bottom), (0, 255, 0), 2)
+    # cv.imwrite('figure.jpg', display_figure_img)
 
     # cv.imshow('Step 5: Texts', testing.ResizeWithAspectRatio(testing.imshow_components(textLabels), width=450))
     # cv.imshow('Step 5: Non-Texts', testing.ResizeWithAspectRatio(testing.imshow_components(nonTextLabels), width=450))
