@@ -2,5 +2,16 @@
 
 Time:  49.187272787094116
 
-Image: 0, TP: 16114, FP: 0, FN: 5120, precision: 1.0, recall: 0.7588772722991429
-Image: 1, TP: 14913, FP: 0, FN: 4839, precision: 1.0, recall: 0.7550121506682868
+Image: 0
+TP: 16114
+FP: 0
+FN: 5120
+trues: 21175
+ink pixels: 30985
+
+Image: 1
+TP: 14913
+FP: 0
+FN: 4839
+trues: 19752
+ink pixels: 35579

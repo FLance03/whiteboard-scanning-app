@@ -6,8 +6,37 @@
 
 Time:  385.70066118240356
 
-Image: 0, TP: 1281, FP: 2843, FN: 6307
-Image: 1, TP: 6426, FP: 5295, FN: 6857
-Image: 2, TP: 8267, FP: 1212, FN: 9845
-Image: 3, TP: 7263, FP: 2956, FN: 14073
-Image: 4, TP: 10769, FP: 6159, FN: 13055
+Image: 0
+TP: 1280
+FP: 2843
+FN: 6308
+trues: 7588
+ink pixels: 12100
+
+Image: 1
+TP: 6410
+FP: 5295
+FN: 6873
+trues: 13283
+ink pixels: 17636
+
+Image: 2
+TP: 8267
+FP: 1212
+FN: 9845
+trues: 18103
+ink pixels: 18419
+
+Image: 3
+TP: 7255
+FP: 2954
+FN: 14081
+trues: 21336
+ink pixels: 27737
+
+Image: 4
+TP: 10679
+FP: 6153
+FN: 13141
+trues: 23807
+ink pixels: 32764

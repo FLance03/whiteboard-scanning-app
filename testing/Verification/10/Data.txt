@@ -3,46 +3,36 @@
 Time:  310.26146245002747
 
 Image: 0
-percent TP: 0.0
-percent FP: 0.02890625
-percent FN: 0.0
+TP: 0
+FP: 407
+FN: 0
 trues: 0
-percent true: 0.0
-precision: nan
-recall: nan
+ink pixels: 14080
 
 Image: 1
-percent TP: 0.09875242583864707
-percent FP: 0.13019129470474078
-percent FN: 0.01846409758802329
+TP: 1781
+FP: 2348
+FN: 333
 trues: 2114
-percent true: 0.11721652342667037
-precision: 0.4313393073383386
-recall: 0.8424787133396405
+ink pixels: 18035
 
 Image: 2
-percent TP: 0.05949264241220547
-percent FP: 0.19888056332942133
-percent FN: 0.28509524239415
+TP: 659
+FP: 2203
+FN: 3158
 trues: 3817
-percent true: 0.3445878848063555
-precision: 0.2302585604472397
-recall: 0.17264867697144354
+ink pixels: 11077
 
 Image: 3
-percent TP: 0.0820839580209895
-percent FP: 0.047132683658170915
-percent FN: 0.3499812593703148
+TP: 876
+FP: 503
+FN: 3735
 trues: 4611
-percent true: 0.4320652173913043
-precision: 0.6352429296591733
-recall: 0.18998048145738453
+ink pixels: 10672
 
 Image: 4
-percent TP: 0.05488773747841105
-percent FP: 0.16504317789291884
-percent FN: 0.1531951640759931
+TP: 1589
+FP: 4778
+FN: 4435
 trues: 6024
-percent true: 0.20808290155440415
-precision: 0.24956808544055284
-recall: 0.2637782204515272
+ink pixels: 28950

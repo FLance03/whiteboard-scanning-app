@@ -5,7 +5,30 @@
 
 Time:  289.30634331703186
 
-Image: 0, TP: 6113, FP: 7438, FN: 1048, precision: 0.4511106191424987, recall: 0.8536517246194666
-Image: 1, TP: 4935, FP: 10954, FN: 2154, precision: 0.3105922336207439, recall: 0.6961489631823953
-Image: 2, TP: 0, FP: 14938, FN: 0, precision: 0.0, recall: nan
-Image: 3, TP: 0, FP: 10460, FN: 0, precision: 0.0, recall: nan
+Image: 0
+TP: 6112
+FP: 7438
+FN: 1049
+trues: 7161
+ink pixels: 27262
+
+Image: 1
+TP: 4920
+FP: 10939
+FN: 2169
+trues: 7089
+ink pixels: 28375
+
+Image: 2
+TP: 0
+FP: 14938
+FN: 0
+trues: 0
+ink pixels: 26984
+
+Image: 3
+TP: 0
+FP: 10460
+FN: 0
+trues: 0
+ink pixels: 28652

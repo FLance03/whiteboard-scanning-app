@@ -4,8 +4,37 @@
 
 Time:  604.3952875137329
 
-Image: 0, TP: 3675, FP: 2896, FN: 4843, precision: 0.5592756049307563, recall: 0.431439305001174
-Image: 1, TP: 4466, FP: 2862, FN: 11573, precision: 0.6094432314410481, recall: 0.2784462871750109
-Image: 2, TP: 0, FP: 3751, FN: 22690, precision: 0, recall: 4.4070336256665636e-05
-Image: 3, TP: 7075, FP: 1806, FN: 4986, precision: 0.7966445220132868, recall: 0.5866014426664455
-Image: 4, TP: 7570, FP: 5348, FN: 4979, precision: 0.5860040253909274, recall: 0.6032353175551837
+Image: 0
+TP: 3659
+FP: 2893
+FN: 4859
+trues: 8518
+ink pixels: 12896
+
+Image: 1
+TP: 4419
+FP: 2857
+FN: 11620
+trues: 16039
+ink pixels: 16812
+
+Image: 2
+TP: 0
+FP: 3744
+FN: 22691
+trues: 22691
+ink pixels: 31406
+
+Image: 3
+TP: 7048
+FP: 1790
+FN: 5013
+trues: 12061
+ink pixels: 22767
+
+Image: 4
+TP: 7559
+FP: 5336
+FN: 4989
+trues: 12548
+ink pixels: 30012

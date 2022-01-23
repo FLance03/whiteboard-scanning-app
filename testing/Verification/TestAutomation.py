@@ -67,7 +67,7 @@ while True:
     trues, fn = GetRecall(positive, negative, output)
     num_black = np.sum((output < 75).all(axis=2))
     precision, recall = tp / (tp + fp) if trues > 0 else np.nan, tp / (tp + fn) if trues > 0 else np.nan
-    print("Image: {0}\nTP: {1}\nFP: {2}\nFN: {3}\ntrues: {4}\nink pixels: {5}\nprecision: {6}\nrecall: {7}"
+    print("Image: {0}\nTP: {1}\nFP: {2}\nFN: {3}\ntrues: {4}\nink pixels: {5}"
                         .format(img_num, tp, fp, fn, trues, num_black, precision, recall))
     print()
     # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
