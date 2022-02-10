@@ -38,26 +38,25 @@ def TestCompatibilityOfTwoFeatures(first, second):
     global fit
     assert first.shape == second.shape, "hi"
     assert first.ndim == 3, str(first.ndim)
-    assert first.shape[2] == 18
+    assert first.shape[2] == 8
 
-    img_1, img_2 = first.reshape(-1, 18), second.reshape(-1, 18)
+    img_1, img_2 = first.reshape(-1, 8), second.reshape(-1, 8)
     output = np.ones((img_1.shape[0]), dtype=np.uint8)
-    img_1_non_blanks = np.logical_or(img_1[:, 8] != 0, img_1[:, 17] != 0)
-    img_2_non_blanks = np.logical_or(img_2[:, 8] != 0, img_2[:, 17] != 0)
+    img_1_non_blanks = (img_1[:, :8] != 0).any(axis=1)
+    img_2_non_blanks = (img_2[:, :8] != 0).any(axis=1)
     img_non_blanks = np.logical_or(img_1_non_blanks, img_2_non_blanks)
     non_blank_inds = np.asarray(img_non_blanks).nonzero()[0]
     if non_blank_inds.size > 0:
         img_1, img_2 = img_1[img_non_blanks], img_2[img_non_blanks]
         diff = np.abs(img_1 - img_2)
-        diff = np.concatenate((diff[:, :4], diff[:, 5:], img_1[:, 4:5], img_2[:, 4:5]), axis=1)
+        diff = np.concatenate((diff[:, :7], img_1[:, 7:], img_2[:, 7:]), axis=1)
         # Scale to preprocess
-        diff[:, (0, 1, 2, 8, 9, 10)] = (diff[:, (0, 1, 2, 8, 9, 10)] - 0) / (60 - 0)
-        diff[:, (12)] = (diff[:, (12)]) / (6 - 0)
-        diff[:, (4, 13)] = (diff[:, (4, 13)]) / (2.5 - 0)
-        diff[:, (5, 14)] = (diff[:, (5, 14)]) / (3 - 0)
-        diff[:, (6, 15)] = (diff[:, (6, 15)]) / (10 - 0)
-        diff[:, (7, 16)] = (diff[:, (7, 16)]) / (2 - 0)
-        diff[:, (17, 18)] = (diff[:, (17, 18)]) / (6 - 0)
+        diff[:, (0, 1, 2)] = (diff[:, (0, 1, 2)] - 0) / (170 * np.pi/180 - 0)
+        diff[:, 4] = (diff[:, 4]) / (2.5 - 0)
+        diff[:, 5] = (diff[:, 5]) / (3 - 0)
+        diff[:, 6] = (diff[:, 6]) / (10 - 0)
+
+        diff[:, (7, 8)] = (diff[:, (7, 8)]) / (6 - 0)
 
         # start_pred = time()
         output[non_blank_inds] = np.where(fit.predict(diff) == 1, 2, 0)
@@ -157,7 +156,7 @@ def CompareFeatures(first, second):
         # Note: len(first) is just height which should not change: len(first) == len(second) == len(smallerWindow)...
         assert smallerWindow.shape == largerWindow.shape, (smallerWindow.shape, largerWindow.shape)
         redundancyMatrix = TestCompatibilityOfTwoFeatures(smallerWindow, largerWindow)
-        if np.count_nonzero(redundancyMatrix) > redundancyMatrix.size * 0.60:
+        if np.count_nonzero(redundancyMatrix) > redundancyMatrix.size * 0.60 and np.sum(redundancyMatrix == 1) < redundancyMatrix.size:
             weight, redundancyOffset = GetWeight(redundancyMatrix)
             if weight > winner['weight']:
                 if firstIsSmaller:
@@ -385,9 +384,11 @@ def CheckBlackIntersection(firstFeatures, firstBox, secondFeatures, secondBox):
                         greaterTop - secondBox[2], lesserBottom - secondBox[2]]
     currentMerged = firstFeatures[currentIntersect[2]:currentIntersect[3]+1, currentIntersect[0]:currentIntersect[1]+1]
     pastMerged = secondFeatures[pastIntersect[2]:pastIntersect[3]+1, pastIntersect[0]:pastIntersect[1]+1]
+    currentNonBlanks = (currentMerged[:, :, :8]!=0).any(axis=2)
+    pastNonBlanks = (pastMerged[:, :, :8]!=0).any(axis=2)
     # If even one in currentMerged or pastMerged has a non-blank feature, return False else return True
     # If currentMerged has non-blank features or pastMerged has non-blank features, return False else return True
-    return not np.logical_or(np.any(currentMerged[:, :, 8]!=0), np.any(pastMerged[:, :, 8]!=0))
+    return not np.any(currentNonBlanks) or np.any(pastNonBlanks)
 
 
 def TryToMergeFeatures(imgsFeatures, currentImgFeatures, matchedLabels, currentMergedFeatures, pastMergedFeatures, currentMatchedLabelsAssoc, currentRelative,
@@ -495,7 +496,7 @@ def PositionRedundancy(intersect, CCFeatures, intersectHeight, intersectWidth):
     return imgNumInds, rowInds, colInds
 
 
-def RecordRedundancy(currentRedundancyColorer, pastRedundancyColorer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
+def RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNum, intersectCurrent, intersectPast, redundancyOffset):
     global redundancyCounter
     # testing.ShowChosenRedundancy2(currentCCFeatures, pastCCFeatures, {
     #     'currentLeft': intersectCurrent[0],
@@ -521,6 +522,9 @@ def RecordRedundancy(currentRedundancyColorer, pastRedundancyColorer, currentCCF
                          pastCCFeatures['info'][7] - (intersectPast[0] * nonOverlapSize + COL_WINDOW_SIZE),
                          currentCCFeatures['info'][7] - (intersectCurrent[0] * nonOverlapSize + COL_WINDOW_SIZE))
 
+    pastRedundancyColorer = redundancyColorer[imgNum]
+    currentRedundancyColorer = redundancyColorer[imgNum]
+
     pastImgInds, pastRowInds, pastColInds = PositionRedundancy(intersectPast, pastCCFeatures,
                                                                 intersectHeight, intersectWidth)
     pastLabels = pastRedundancyColorer[pastImgInds, pastRowInds, pastColInds]
@@ -545,12 +549,12 @@ def RecordRedundancy(currentRedundancyColorer, pastRedundancyColorer, currentCCF
 
 
 def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
-                     pastMergedFeatures, imgNum, type2s, relatives, type2Archives, currentRedundancyColorer, pastRedundancyColorer,
+                     pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyColorer,
                      matched=-1):
     global countMerged
     weight, currentImgInd, pastImgNum, pastImgInd, winner, currentCCFeatures, pastCCFeatures = maxWeight
     assert imgNum != pastImgNum
-    RecordRedundancy(currentRedundancyColorer, pastRedundancyColorer, currentCCFeatures, pastCCFeatures, imgNum,
+    RecordRedundancy(redundancyColorer, currentCCFeatures, pastCCFeatures, imgNum,
                         (winner['currentLeft'], winner['currentRight'], winner['currentTop'], winner['currentBottom']),
                         (winner['pastLeft'], winner['pastRight'], winner['pastTop'], winner['pastBottom']),
                                                                             winner['redundancyOffset'])
@@ -775,7 +779,7 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
 
 
 def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
-                      type2Archives, currentRedundancyColorer, pastRedundancyColorer, currentImgFeatures, THRESHOLD1):
+                      type2Archives, redundancyColorer, currentImgFeatures, THRESHOLD1):
     currentMergedFeatures = []
     pastMergedFeatures = []
     maxLengthPossible = max([len(imgsFeatures[i]) for i in range(imgNum + 1)])
@@ -807,10 +811,10 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
             #     testing.ShowChosenRedundancy(currentCCFeatures, pastCCFeatures, winner, plotIt=True)
             if mergeable:
                 AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures, pastMergedFeatures,
-                                    imgNum, type2s, relatives, type2Archives, currentRedundancyColorer, pastRedundancyColorer, matched=matchedInds)
+                                    imgNum, type2s, relatives, type2Archives, redundancyColorer, matched=matchedInds)
         else:
             AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatchedLabelsAssoc, matchedLabels, currentMergedFeatures,
-                             pastMergedFeatures, imgNum, type2s, relatives, type2Archives, currentRedundancyColorer, pastRedundancyColorer)
+                             pastMergedFeatures, imgNum, type2s, relatives, type2Archives, redundancyColorer)
         # if weight <= -0:
         #     print('is New: ' + str((not (True in hasMatched)) or (hasMatched and mergeable)))
         #     print(weight)
@@ -820,8 +824,9 @@ def UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, img
     return imgsFeatures
 
 
-def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer, pastRedundancyColorer):
+def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer):
     global redundancyCounter
+    lap = time()
     # imgsFeatures is a 3d array (not including the numpy arrays inside)
     redundantCC = []
     pastImgFeatures = []
@@ -886,19 +891,21 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedu
             # testing.Summarize(weights)
             absMed = weights - np.median(weights)
             IQR = np.percentile(absMed, 75) - np.percentile(absMed, 25)
-            THRESHOLD1 = np.median(weights) * 1.5
+            THRESHOLD1 = np.median(weights) * 2
             # THRESHOLD1 = np.median(weights) + IQR * 1.5
-            print('Max: ', np.max(weights))
-            print('Median * 1.5: ', np.median(weights) * 1.5)
-            print('Median * 2: ', np.median(weights) * 2)
-            print('Median + IQR * 1.5: ', np.median(weights) + IQR * 1.5)
-            print('THRESH: ', THRESHOLD1)
+            # print('Max: ', np.max(weights))
+            # print('Median * 1.5: ', np.median(weights) * 1.5)
+            # print('Median * 2: ', np.median(weights) * 2)
+            # print('Median + IQR * 1.5: ', np.median(weights) + IQR * 1.5)
+            # print('THRESH: ', THRESHOLD1)
             imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
-                                           type2Archives[-1], currentRedundancyColorer, pastRedundancyColorer,
+                                           type2Archives[-1], redundancyColorer,
                                              currentImgFeatures, THRESHOLD1)
+            print(f"Image Number {imgNum + 1} time: ", time() - lap)
+            lap = time()
             # testing.ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
     retVal = [{'img': np.where(CC['img'] > 0, 0, 255).astype(np.uint8), 'type': CC['type']} for pic in imgsFeatures for CC in pic]
-    testing.WriteColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
+    testing.WriteColorRedundancy(redundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
     # for img in retVal:
     #     print(img['type'])
     #     cv.imshow('img', img['img'].astype(np.uint8))
@@ -925,8 +932,7 @@ fit = joblib.load(filename)
 
 def main(imgsLabels):
     redundancyDrawer = []
-    currentRedundancyColorer = []
-    pastRedundancyColorer = []
+    redundancyColorer = []
     maxWidth = 0
     maxHeight = 0
     imgsFeatures = []
@@ -994,10 +1000,8 @@ def main(imgsLabels):
         redundancyDrawer[ind] = np.pad(img, [(0, maxHeight-img.shape[0]), (0, maxWidth-img.shape[1])],
                                       mode='constant', constant_values=0)
     redundancyDrawer = np.array(redundancyDrawer, dtype=np.uint8)
-    currentRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
-    pastRedundancyColorer = np.zeros_like(redundancyDrawer, dtype=np.uint16)
-    currentRedundancyColorer = np.array(currentRedundancyColorer)
-    pastRedundancyColorer = np.array(pastRedundancyColorer)
-    return ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, currentRedundancyColorer, pastRedundancyColorer)
+    redundancyColorer = np.zeros((len(redundancyDrawer), *redundancyDrawer.shape), dtype=np.uint16)
+    redundancyColorer = np.array(redundancyColorer)
+    return ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyColorer)
 cv.waitKey()
 cv.destroyAllWindows()

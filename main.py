@@ -28,7 +28,7 @@ while True:
     # print(img)
     testImages.append(img)
     i += 1
-height = testImages[0].shape[0] // 5
+height = testImages[0].shape[0] // 5 if testImages[0].shape[0] > 500 else testImages[0].shape[0]
 # height = 500
 print("height: ", height)
 for ind, testImage in enumerate(testImages):
@@ -44,11 +44,10 @@ for ind, testImage in enumerate(testImages):
     img = Step2.main(img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
-    cv.imwrite(str(ind) + '.jpg', bw)
     kernel = np.ones((5, 5),np.uint8)
-    # cv.imwrite(str(ind) + 'p.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
-    # cv.imwrite(str(ind) + 'n.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
-    # cv.imwrite(str(ind) + 'o.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
+    cv.imwrite(str(ind) + 'p.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
+    cv.imwrite(str(ind) + 'n.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
+    cv.imwrite(str(ind) + 'o.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
     bw = cv.morphologyEx(bw, cv.MORPH_CLOSE, kernel)
     bw = cv.morphologyEx(bw, cv.MORPH_OPEN, kernel)
     bw = cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA)
@@ -67,4 +66,4 @@ for ind, testImage in enumerate(testImages):
     cv.destroyAllWindows()
 listCC = Step7.main(imgsLabels)
 Step8.ConvertToDocx(listCC)
-print('Time: ', time() - startTime)
+print('Total Time: ', time() - startTime)

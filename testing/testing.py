@@ -156,11 +156,20 @@ def ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseL
         cv.destroyAllWindows()
     return wholePics
 
-def WriteColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels):
+def WriteColorRedundancy(redundancyColorer, imgsPhraseLabels, imgsNonTextLabels):
     # wholePics = ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
-    wholePics = ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
-    np.savez('output.npz', labels=np.concatenate((currentRedundancyColorer, pastRedundancyColorer), axis=0).astype(np.uint8)
-                            , colors=np.array(wholePics))
+    bgr = []
+    for img_num in range(len(imgsNonTextLabels)):
+        currImg = np.zeros((*imgsNonTextLabels[img_num].shape, 3), dtype=np.uint8)
+        currImg[imgsNonTextLabels[img_num].nonzero()] = (255, 255, 255)
+        currImg[imgsPhraseLabels[img_num].nonzero()] = (255, 255, 255)
+        currImg = np.pad(currImg, [(0, redundancyColorer.shape[2]-currImg.shape[0]),
+                                   (0, redundancyColorer.shape[3]-currImg.shape[1]), (0, 0)],
+                                  mode='constant', constant_values=0)
+        bgr.append(currImg)
+    bgr = np.array(bgr)
+
+    np.savez('output.npz', labels=redundancyColorer.astype(np.uint8), bgr=bgr)
     # for imgNum, wholePic in enumerate(wholePics):
     #     cv.imwrite(str(imgNum) + '.png', wholePic)
 

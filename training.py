@@ -140,6 +140,7 @@ for img_num_1, img_num_2 in relations:
 
         img_1 = get_features.main(img_1, labelNum=0)[0]
         img_2 = get_features.main(img_2, labelNum=0)[0]
+        assert img_1.ndim == img_2.ndim == 3, print(img_2.ndim)
 
         assert img_1.shape[2] == img_2.shape[2]
         min_height = min(img_1.shape[0], img_2.shape[0])
@@ -147,17 +148,19 @@ for img_num_1, img_num_2 in relations:
         img_1 = img_1[:min_height, :min_width, :]
         img_2 = img_2[:min_height, :min_width, :]
 
-        img_1_non_blanks = np.logical_or(img_1[:, :, 8] != 0, img_1[:, :, 17] != 0)
-        img_2_non_blanks = np.logical_or(img_2[:, :, 8] != 0, img_2[:, :, 17] != 0)
+        # img_1_non_blanks = np.logical_or(img_1[:, :, 8] != 0, img_1[:, :, 17] != 0)
+        # img_2_non_blanks = np.logical_or(img_2[:, :, 8] != 0, img_2[:, :, 17] != 0)
+        img_1_non_blanks = (img_1[:, :, :8] != 0).any(axis=2)
+        img_2_non_blanks = (img_2[:, :, :8] != 0).any(axis=2)
         assert img_1_non_blanks.shape == img_2_non_blanks.shape, (img_1.shape, img_2.shape)
         img_non_blanks = np.logical_or(img_1_non_blanks, img_2_non_blanks)
         img_1, img_2 = img_1[img_non_blanks], img_2[img_non_blanks]
         assert img_1.ndim == img_2.ndim == 2
-        assert img_1.shape[1] == img_2.shape[1] == 18
+        assert img_1.shape[1] == img_2.shape[1] == 8
         assert img_1.shape == img_2.shape
 
         diff = np.abs(img_1 - img_2)
-        diff = np.concatenate((diff[:, :4], diff[:, 5:], img_1[:, 4:5], img_2[:, 4:5]), axis=1)
+        diff = np.concatenate((diff[:, :7], img_1[:, 7:], img_2[:, 7:]), axis=1)
         features.extend(diff)
 
         # features_1 = np.concatenate((img_1, img_2), axis=1)
@@ -170,13 +173,13 @@ for img_num_1, img_num_2 in relations:
         # category.extend([category_is_true, category_is_true])
 
 features = np.array(features)
-assert features.ndim == 2 and features.shape[1] == 19
+assert features.ndim == 2 and features.shape[1] == 9
 category = 1 if category_is_true else 0
 features = np.concatenate((features, np.broadcast_to([category], (features.shape[0], 1))), axis=1)
-assert features.ndim == 2 and features.shape[1] == 20
+assert features.ndim == 2 and features.shape[1] == 10
 try:
     training_data = np.load('training_data.npz')
-    assert training_data['data'].ndim == 2 and training_data['data'].shape[1] == 20
+    assert training_data['data'].ndim == 2 and training_data['data'].shape[1] == 10
     training_data = np.concatenate((training_data['data'], features), axis=0)
     np.savez('training_data.npz', data=training_data)
 except FileNotFoundError:

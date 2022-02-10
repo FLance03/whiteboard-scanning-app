@@ -4,6 +4,21 @@ import pathlib
 
 import cv2 as cv
 
+def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
+    dim = None
+    (h, w) = image.shape[:2]
+
+    if width is None and height is None:
+        return image
+    if width is None:
+        r = height / float(h)
+        dim = (int(w * r), height)
+    else:
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    return cv.resize(image, dim, interpolation=cv.INTER_AREA)
+
 timestamps = []
 
 with open('timestamps.txt', 'r') as f:
@@ -34,7 +49,7 @@ parent_dir = pathlib.Path(__file__).parent.resolve()
 for (_, _, filenames) in walk(parent_dir):
     for filename in filenames:
         p = re.match(r'(?P<name>.*)?\.(?P<extension>\w*)', filename)
-        if p is not None and p['extension'] in ['mkv', 'mp4']:
+        if p is not None and p['extension'] in ['mkv', 'mp4', 'webm']:
             if video_extension != '':
                 raise Exception('Multiple files with video extensions in current directory')
             video_name = '' if p['name'] is None else p['name']
@@ -59,7 +74,7 @@ for index, ms_stamp in enumerate(timeinfo):
     frame_exists, frame = cap.read()
     stack = [frame]
     stack_index = -1
-    cv.imshow(str(index), frame)
+    cv.imshow(str(index), frame if frame.shape[0] < 500 and frame.shape[1] < 700 else cv.resize(frame, (700, 500), interpolation=cv.INTER_AREA))
     while key != ord(' '):
         key = cv.waitKey(50)
         if key == ord('/') or key == ord('.'):
@@ -80,7 +95,7 @@ for index, ms_stamp in enumerate(timeinfo):
                     print('Cannot go back a frame, try to lessen by 1 the second for timestamp #', index + 1)
                 else:
                     stack_index -= 1
-            cv.imshow(str(index), stack[stack_index])
+            cv.imshow(str(index), stack[stack_index] if stack[stack_index].shape[0] < 500 and stack[stack_index].shape[1] < 700 else cv.resize(stack[stack_index], (700, 500), interpolation=cv.INTER_AREA))
     cv.destroyAllWindows()
     cv.imwrite(r'{new_dir}/{pic_num} - ({hr}-{min}-{sec})+{frame_shifts} frames - {tag}.png'.format(
         new_dir=new_dir,

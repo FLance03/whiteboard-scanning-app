@@ -44,7 +44,7 @@ def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
 
 output = np.load('output.npz')
 labels = output['labels']
-colors = output['colors']
+colors = output['bgr']
 # parent_dir = pathlib.Path(__file__).parent.resolve()
 # imgs = []
 # for _, _, filenames in os.walk(parent_dir):
@@ -57,29 +57,33 @@ colors = output['colors']
 # assert [img.shape for img in imgs].count(imgs[0].shape) == len(imgs), 'some imgs have different shapes'
 # assert len(imgs) % 2 == 0
 
-current = np.array(labels[:len(labels)//2])
-past = np.array(labels[len(labels)//2:])
-for current_num, current_img in enumerate(current):
+# current = np.array(labels[:len(labels)//2])
+# past = np.array(labels[len(labels)//2:])
+for current_num, current_img_group in enumerate(labels):
     if current_num == 0:
         continue
+    # Get current image from its group
+    current_img = current_img_group[current_num]
     # Get unique elements and is already sorted
     current_labels = np.unique(current_img)
     assert current_labels[0] == 0
     current_labels = current_labels[1:]
     for current_label in current_labels:
         filter_img = current_img == current_label
+        # Get 3d black/white image of current
         cleaned_current_color = colors[current_num]
         # (cleaned_current_color != [0, 0, 0]).all(axis=2) outputs a 2d boolean array and is used to index a 3d array
         cleaned_current_color[(cleaned_current_color != [0, 0, 0]).any(axis=2)] = [255, 255, 255]
         cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [0, 255, 0]
+        past = current_img_group
         for past_num in range(current_num):
-            test_num = 4
-            if past_num != test_num and current_num != test_num:
-                continue
+            # test_num = 1
+            # if past_num != test_num and current_num != test_num:
+            #     continue
             past_img = past[past_num]
             if (past_img == current_label).any():
                 filter_past = past_img == current_label
-                cleaned_past_color = colors[past_num + len(labels)//2]
+                cleaned_past_color = colors[past_num]
                 cleaned_past_color[(cleaned_past_color != [0, 0, 0]).any(axis=2)] = [255, 255, 255]
                 cleaned_past_color[np.logical_and((cleaned_past_color == [255, 255, 255]).all(axis=2), filter_past)] = [0, 255, 0]
             #     np.logical_or((current_img == [0, 0, 0]).all(axis=2),

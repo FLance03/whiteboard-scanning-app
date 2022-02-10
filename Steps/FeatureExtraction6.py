@@ -82,7 +82,7 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
             blackDensity.append(blackCount/totalCount)
             numColBlack.append(blackCount)
         if len(highestBlack) == 0:
-            for i in range(9):
+            for i in range(8):
                 # No black pixels in all columns
                 # We can check the last element which holds the info of the average number of
                 #   black pixels to exclude these
@@ -98,28 +98,13 @@ def ExtractFeatures(connComp, labelNum, minWidth=COL_WINDOW_SIZE):
             else:
                 features[-1].append(0), features[-1].append(0), features[-1].append(0)
             features[-1].append(sum(blackDensity) / COL_WINDOW_SIZE)
-            features[-1].append(sum(numColBlack) / COL_WINDOW_SIZE)
             features[-1].append(np.std(numColBlack))
             features[-1].append(np.std(numColBlack + [0] * (COL_WINDOW_SIZE - numNonBlankCols)))
             features[-1].append(numNonBlankCols)
-            features[-1].append(2) if len(highestBlack) > 1 else features[-1].append(1)
+            features[-1].append(sum(numColBlack) / COL_WINDOW_SIZE)
     assert indStart + 1 == stop, "Window did not exactly divide"
     features = np.array(features, dtype=np.float32)
-    changeFeatures = []
-    count = 0
-    for ind, feature in enumerate(features):
-        count = 0 if feature[-1] == 0 else count + 1
-        if count == 2:
-            # Since the last index is 0 if there is a black pixel else 1, only find the difference except the last index
-            if features[ind, -1] == 1 or features[ind - 1, -1] == 1:
-                changeFeatures.append(np.r_[features[ind, :-1] - features[ind - 1, :-1], [1]])
-            else:
-                changeFeatures.append(np.r_[features[ind, :-1] - features[ind - 1, :-1], [2]])
-            count = 1
-        else:
-            changeFeatures.append([0 for _ in range(9)])
-    changeFeatures = np.array(changeFeatures, dtype=np.float32)
-    return features, changeFeatures
+    return features
 
 
 def main(labels, labelNum):
@@ -136,17 +121,17 @@ def main(labels, labelNum):
     for i in range(start, stop, ROW_OVERLAP_SIZE):
         # Get the features per chunks of 2*ROW_OVERLAP_SIZE rows with ROW_OVERLAP_SIZE rows overlapping
         featureData = ExtractFeatures(labels[i:i + 2*ROW_OVERLAP_SIZE, left:right+1], 1)
-        features.append(np.concatenate((featureData[0], featureData[1]), axis=1))
+        features.append(featureData)
     if stop <= start:
         # The loop did not run even once
         featureData = ExtractFeatures(labels[top:bottom+1, left:right+1], labelNum)
-        features.append(np.concatenate((featureData[0], featureData[1]), axis=1))
+        features.append(featureData)
     elif i + 1 < stop:
         # The loop ran at least once but was not able to cover all (some of the last elements
         #   were not processed)
         # lastInd = top + (stop - start - 1) // ROW_OVERLAP_SIZE * ROW_OVERLAP_SIZE
         featureData = ExtractFeatures(labels[i+ROW_OVERLAP_SIZE:bottom+1, left:right+1], 1)
-        features.append(np.concatenate((featureData[0], featureData[1]), axis=1))
+        features.append(featureData)
     features = np.array(features, dtype=np.float32)
     return features, labelInfo
 
