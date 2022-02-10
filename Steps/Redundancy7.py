@@ -901,9 +901,9 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyC
             imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
                                            type2Archives[-1], redundancyColorer,
                                              currentImgFeatures, THRESHOLD1)
-            print(f"Image Number {imgNum + 1} time: ", time() - lap)
             lap = time()
             # testing.ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
+        print(f"Image Number {imgNum + 1} time: ", time() - lap)
     retVal = [{'img': np.where(CC['img'] > 0, 0, 255).astype(np.uint8), 'type': CC['type']} for pic in imgsFeatures for CC in pic]
     testing.WriteColorRedundancy(redundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
     # for img in retVal:
