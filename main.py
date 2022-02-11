@@ -38,9 +38,9 @@ for ind, testImage in enumerate(testImages):
     # cv.destroyAllWindows()
     if ind not in []:
         img = Step1.Preprocessing1(img)
-        # cv.imshow(str(ind) + '.png', testing.ResizeWithAspectRatio(img, height=500))
-        # cv.waitKey()
-        # cv.destroyAllWindows()
+        cv.imshow(str(ind) + '.png', testing.ResizeWithAspectRatio(img, height=500))
+        cv.waitKey()
+        cv.destroyAllWindows()
     img = Step2.main(img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
