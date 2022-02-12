@@ -639,7 +639,7 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         currentMatchedLabelsAssoc[currentImgInd] = matchedLabels[pastImgNum, pastImgInd]
         pastMergedFeatures[currentMatchedLabelsAssoc[currentImgInd]].append(
                                             np.r_[mergedFeatures, [imgNum, currentImgInd]])
-    elif matchedLabels[imgNum, currentImgInd] != matchedLabels[pastImgNum, pastImgInd]:
+    elif currentMatchedLabelsAssoc[currentImgInd] != matchedLabels[pastImgNum, pastImgInd]:
         # Make sure both CCs to merge are in different coordinates as they already have one and have to be merged
         countMerged[3] += 1
         # The current and past already have their existing coordinates.
@@ -658,8 +658,8 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         oldOrigin = [mergedFeatures[0] - relatives[pastImgNum, pastImgInd, 0],
                      mergedFeatures[2] - relatives[pastImgNum, pastImgInd, 1]]
         # oldOrigin = mergedFeatures[[0, 2]] - relatives[pastImgNum, pastImgInd]
-        for boxNum in range(len(pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]])):
-            box = pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]][boxNum]
+        boxes = pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]].copy()
+        for box in boxes:
             left, right, top, bottom = box[:4]
             left, right, top, bottom = left+oldOrigin[0], right+oldOrigin[0], top+oldOrigin[1], bottom+oldOrigin[1]
             pastMergedFeatures[currentMatchedLabelsAssoc[currentImgInd]].append(
@@ -670,7 +670,6 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
             if imgNum == box[4]:
                 assert currentMatchedLabelsAssoc[box[5]] != -1
                 currentMatchedLabelsAssoc[box[5]] = currentMatchedLabelsAssoc[currentImgInd]
-                matchedLabels[imgNum, box[5]] = currentMatchedLabelsAssoc[currentImgInd]
             else:
                 matchedLabels[box[4], box[5]] = currentMatchedLabelsAssoc[currentImgInd]
         assert matchedLabels[pastImgNum, pastImgInd] == currentMatchedLabelsAssoc[currentImgInd]
@@ -744,7 +743,7 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
                     newOrigImg[edges[2]+box[2]:edges[2]+box[2]+len(origImg), edges[0]+box[0]:edges[0]+box[0]+len(origImg[0])] = origImg
                     assert len(img) == len(origImg) and len(img[0]) == len(origImg[0])
                     deleteInds[boxNum, boxInd] = True
-                    assert usedUpCCs[boxNum, boxInd] == False
+                    assert usedUpCCs[boxNum, boxInd] == False, (boxNum, boxInd)
                     usedUpCCs[boxNum, boxInd] = True
             info = Step5.GetLabelsInfo(np.where(newImg!=0, 1, 0))[0]
             # If the edge rows/columns still have blanks, delete those rows/columns
