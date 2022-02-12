@@ -168,7 +168,15 @@ def WriteColorRedundancy(redundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
                                   mode='constant', constant_values=0)
         bgr.append(currImg)
     bgr = np.array(bgr)
-
+    count = 0
+    for row in redundancyColorer:
+        for img in row:
+            cv.imshow(str(count), imshow_components(img.astype(np.uint8)))
+            count += 1
+    for img in bgr:
+        cv.imshow(str(count), img.astype(np.uint8))
+        count += 1
+    cv.waitKey()
     np.savez('output.npz', labels=redundancyColorer.astype(np.uint8), bgr=bgr)
     # for imgNum, wholePic in enumerate(wholePics):
     #     cv.imwrite(str(imgNum) + '.png', wholePic)

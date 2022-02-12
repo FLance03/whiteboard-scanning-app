@@ -21,10 +21,10 @@ def onrelease(e):
 # Note:
 # - Change these values to change the coordinates for topline points and botline points
 # - Change HERE!!!!!=
-topLpt, topRpt, botLpt, botRpt = (0, 917), (2987, 598), (0, 4291), (2987, 4829),
+topLpt, topRpt, botLpt, botRpt = (0, 16), (1451, 16), (0, 1060), (1451, 1060),
 
-imageNameInput = "4.jpg"
-imageNameOutput = "4a.jpg"
+imageNameInput = "5.png"
+imageNameOutput = "5a.png"
 img = cv.imread('./'+imageNameInput)
 
 fig, ax = plt.subplots()

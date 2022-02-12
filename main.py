@@ -19,7 +19,7 @@ anded = []
 imgsLabels = []
 i = 0
 while True:
-    img = cv.imread('./Server/' + str(i) + '.png')
+    img = cv.imread('./Server/' + str(i) + '.jpg')
     if img is None:
         break
     # cv.imshow(str(i), testing.ResizeWithAspectRatio(img, height=500))
@@ -38,13 +38,13 @@ for ind, testImage in enumerate(testImages):
     # cv.destroyAllWindows()
     if ind not in []:
         img = Step1.Preprocessing1(img)
-        cv.imshow(str(ind) + '.png', testing.ResizeWithAspectRatio(img, height=500))
-        cv.waitKey()
-        cv.destroyAllWindows()
+        # cv.imshow(str(ind) + '.png', testing.ResizeWithAspectRatio(img, height=500))
+        # cv.waitKey()
+        # cv.destroyAllWindows()
     img = Step2.main(img)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     _, bw = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)
-    kernel = np.ones((5, 5),np.uint8)
+    kernel = np.ones((2, 2),np.uint8)
     cv.imwrite(str(ind) + 'p.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
     cv.imwrite(str(ind) + 'n.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
     cv.imwrite(str(ind) + 'o.jpg', cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA))
@@ -53,9 +53,9 @@ for ind, testImage in enumerate(testImages):
     bw = cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA)
     bw = bw[15:-15]
     # anded.append(np.where(bw == 0, 1, 0))
-    # cv.imshow('Original', testing.ResizeWithAspectRatio(img, height=500))
-    # cv.waitKey()
-    # cv.destroyAllWindows()
+    cv.imshow('Original', testing.ResizeWithAspectRatio(bw, height=500))
+    cv.waitKey()
+    cv.destroyAllWindows()
     # Remove the possible lines from the blackboard edges
     # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
 
