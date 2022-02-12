@@ -19,7 +19,7 @@ anded = []
 imgsLabels = []
 i = 0
 while True:
-    img = cv.imread('./Server/' + str(i) + '.jpg')
+    img = cv.imread('./Server/' + str(i) + '.png')
     if img is None:
         break
     # cv.imshow(str(i), testing.ResizeWithAspectRatio(img, height=500))
@@ -28,7 +28,7 @@ while True:
     # print(img)
     testImages.append(img)
     i += 1
-height = testImages[0].shape[0] // 5 if testImages[0].shape[0] // 5 > 500 else testImages[0].shape[0]
+height = 500 if testImages[0].shape[0] > 500 else testImages[0].shape[0]
 # height = 500
 print("height: ", height)
 for ind, testImage in enumerate(testImages):
@@ -53,9 +53,9 @@ for ind, testImage in enumerate(testImages):
     bw = cv.resize(bw, dsize=(int(bw.shape[1] * height / float(bw.shape[0])), height), interpolation=cv.INTER_AREA)
     bw = bw[15:-15]
     # anded.append(np.where(bw == 0, 1, 0))
-    cv.imshow('Original', testing.ResizeWithAspectRatio(bw, height=500))
-    cv.waitKey()
-    cv.destroyAllWindows()
+    # cv.imshow('Original', testing.ResizeWithAspectRatio(bw, height=500))
+    # cv.waitKey()
+    # cv.destroyAllWindows()
     # Remove the possible lines from the blackboard edges
     # labels, labelsInfo, textLabels, wordLabels, phraseLabels, nonTextLabels
 
