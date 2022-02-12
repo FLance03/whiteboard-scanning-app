@@ -585,6 +585,7 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         matchedLabels[imgNum, currentImgInd] = len(currentMergedFeatures)
         currentMergedFeatures.append([])
         currentMergedFeatures[-1].append([winner['currentLeft'], winner['currentRight'], winner['currentTop'], winner['currentBottom']])
+        assert mergedFeatures[0] != -10**4
         relatives[imgNum, currentImgInd] = [mergedFeatures[0], mergedFeatures[2]]
         assert currentMatchedLabelsAssoc[currentImgInd] == -1
 
@@ -608,13 +609,14 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         #    the origin is therefore the very first past that was merged with current and
         #    we base this (current) past to those values via its relation to current
         mergedFeatures = CreateMergedFeatures(relatives[imgNum, currentImgInd], (winner['currentLeft'], winner['currentTop']),
-                                      (winner['pastLeft'], winner['pastLeft']),
+                                      (winner['pastLeft'], winner['pastTop']),
                                       len(pastCCFeatures['features']), len(pastCCFeatures['features'][0]))
         currentMergedFeatures[matchedLabels[imgNum, currentImgInd]].append(
             [winner['currentLeft'], winner['currentRight'], winner['currentTop'], winner['currentBottom']])
 
         assert currentMatchedLabelsAssoc[currentImgInd] != -1
         matchedLabels[pastImgNum, pastImgInd] = currentMatchedLabelsAssoc[currentImgInd]
+        assert mergedFeatures[0] != -10**4
         relatives[pastImgNum, pastImgInd] = [mergedFeatures[0], mergedFeatures[2]]
         pastMergedFeatures[currentMatchedLabelsAssoc[currentImgInd]].append(
                                             np.r_[mergedFeatures, [pastImgNum, pastImgInd]])
@@ -637,15 +639,15 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         currentMatchedLabelsAssoc[currentImgInd] = matchedLabels[pastImgNum, pastImgInd]
         pastMergedFeatures[currentMatchedLabelsAssoc[currentImgInd]].append(
                                             np.r_[mergedFeatures, [imgNum, currentImgInd]])
-    else:
+    elif matchedLabels[imgNum, currentImgInd] != matchedLabels[pastImgNum, pastImgInd]:
+        # Make sure both CCs to merge are in different coordinates as they already have one and have to be merged
         countMerged[3] += 1
         # The current and past already have their existing coordinates.
         # We choose to transfer all boxes in the past coordinate to the current based on their intersection
-        assert matchedLabels[imgNum, currentImgInd] != matchedLabels[pastImgNum, pastImgInd]
         assert np.all(relatives[imgNum, currentImgInd] != -10**4)
         assert np.all(relatives[pastImgNum, pastImgInd] != -10**4)
         mergedFeatures = CreateMergedFeatures(relatives[imgNum, currentImgInd], (winner['currentLeft'], winner['currentTop']),
-                                      (winner['pastLeft'], winner['pastLeft']),
+                                      (winner['pastLeft'], winner['pastTop']),
                                       len(pastCCFeatures['features']), len(pastCCFeatures['features'][0]))
         currentMergedFeatures[matchedLabels[imgNum, currentImgInd]].append(
             (winner['currentLeft'], winner['currentRight'], winner['currentTop'], winner['currentBottom']) )
@@ -656,17 +658,19 @@ def AddNewRedundancy(imgsFeatures, currentImgFeatures, maxWeight, currentMatched
         oldOrigin = [mergedFeatures[0] - relatives[pastImgNum, pastImgInd, 0],
                      mergedFeatures[2] - relatives[pastImgNum, pastImgInd, 1]]
         # oldOrigin = mergedFeatures[[0, 2]] - relatives[pastImgNum, pastImgInd]
-        for box in pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]]:
+        for boxNum in range(len(pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]])):
+            box = pastMergedFeatures[matchedLabels[pastImgNum, pastImgInd]][boxNum]
             left, right, top, bottom = box[:4]
             left, right, top, bottom = left+oldOrigin[0], right+oldOrigin[0], top+oldOrigin[1], bottom+oldOrigin[1]
             pastMergedFeatures[currentMatchedLabelsAssoc[currentImgInd]].append(
                                                 np.array([left, right, top, bottom, box[4], box[5]]))
             assert matchedLabels[box[4], box[5]] != -1
-            assert np.all(relatives[box[4], box[5]] != -10**4)
+            assert np.all(relatives[box[4], box[5]] != -10**4), ((box[4], box[5]), relatives[box[4], box[5]], matchedLabels[box[4], box[5]])
             relatives[box[4], box[5]] = [left, top]
             if imgNum == box[4]:
                 assert currentMatchedLabelsAssoc[box[5]] != -1
                 currentMatchedLabelsAssoc[box[5]] = currentMatchedLabelsAssoc[currentImgInd]
+                matchedLabels[imgNum, box[5]] = currentMatchedLabelsAssoc[currentImgInd]
             else:
                 matchedLabels[box[4], box[5]] = currentMatchedLabelsAssoc[currentImgInd]
         assert matchedLabels[pastImgNum, pastImgInd] == currentMatchedLabelsAssoc[currentImgInd]
@@ -727,7 +731,7 @@ def OverwriteImages(imgsFeatures, imgNum, currentMergedFeatures, pastMergedFeatu
                     newOrigImg[edges[2]+box[2]:edges[2]+box[2]+len(origImg), edges[0]+box[0]:edges[0]+box[0]+len(origImg[0])] = origImg
                     assert len(img) == len(origImg) and len(img[0]) == len(origImg[0])
                     deleteInds[boxNum, boxInd] = True
-                    assert usedUpCCs[boxNum, boxInd] == False
+                    assert usedUpCCs[boxNum, boxInd] == False, (boxNum, boxInd)
                     usedUpCCs[boxNum, boxInd] = True
             for box in coordinate:
                 if box[4] == imgNum:
@@ -901,9 +905,9 @@ def ProcessPhotos(imgsFeatures, imgsPhraseLabels, imgsNonTextLabels, redundancyC
             imgsFeatures = UpdateFeatureInfo(imgsFeatures, redundantHeap, imgNum, imgsPhraseLabels, imgsNonTextLabels,
                                            type2Archives[-1], redundancyColorer,
                                              currentImgFeatures, THRESHOLD1)
-            lap = time()
             # testing.ColorRedundancy(currentRedundancyColorer, pastRedundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
         print(f"Image Number {imgNum + 1} time: ", time() - lap)
+        lap = time()
     retVal = [{'img': np.where(CC['img'] > 0, 0, 255).astype(np.uint8), 'type': CC['type']} for pic in imgsFeatures for CC in pic]
     testing.WriteColorRedundancy(redundancyColorer, imgsPhraseLabels, imgsNonTextLabels)
     # for img in retVal:
