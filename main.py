@@ -36,7 +36,7 @@ for ind, testImage in enumerate(testImages):
     assert img is not None
     # cv.waitKey()
     # cv.destroyAllWindows()
-    if ind not in []:
+    if ind not in []: # change here
         img = Step1.Preprocessing1(img)
         # cv.imshow(str(ind) + '.png', testing.ResizeWithAspectRatio(img, height=500))
         # cv.waitKey()

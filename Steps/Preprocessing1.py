@@ -54,7 +54,7 @@ def Preprocessing1(img):
     if height >= 1080 or width >= 1920:
         threshold = 1800
     elif height >= 700 or width >= 1200:
-        threshold = 800
+        threshold = 900
     elif height >= 500 or width >= 500:
         threshold = 600
     else:
@@ -80,6 +80,7 @@ def Preprocessing1(img):
     sobelx = cv.Sobel(morph, cv.CV_64F, 0, 1, ksize=3)
     abs_grad_x = cv.convertScaleAbs(sobelx)
     canny = cv.Canny(abs_grad_x, cv.CV_64F, 75, 0)
+    # cv.imshow("canny", resize(canny))
 
     res = img.copy()
     wrp = img.copy()
@@ -142,10 +143,11 @@ def Preprocessing1(img):
         topline = ((botline[0][0], height-botline[0][1]), (botline[1][0], height-botline[1][1]))
 
     # top line blue, bot line green, halfline teal
+    # cv.imshow("lines detected", resize(res))
     cv.line(res, topline[0], topline[1], (255,0,0), 5, cv.LINE_AA)
     cv.line(res, botline[0], botline[1], (0,255,0), 5, cv.LINE_AA)
     cv.line(res, (0, halfline), (width, halfline), (255,255,0), 5, cv.LINE_AA)
-
+    # cv.imshow("topline botline", resize(res))
     # test line widths
     # cv.line(res, (0, 3000), (img.shape[1]-500, 3000), (0,255,255), 1, cv.LINE_AA)
     
@@ -202,7 +204,7 @@ def Preprocessing1(img):
     # cv.imwrite(imageNameOutput+'.jpg',resize(warped))
 
 # test 
-# img = cv.imread('0.png')
+# img = cv.imread('2.png')
 # retval = Preprocessing1(img)
 # cv.imshow('retval', resize(retval))
 # cv.waitKey()
