@@ -66,20 +66,20 @@ for current_num, current_img_group in enumerate(labels):
     current_img = current_img_group[current_num]
     # Get unique elements and is already sorted
     current_labels = np.unique(current_img)
-    assert current_labels[0] == 0
-    current_labels = current_labels[1:]
+    assert current_labels[0] == 0 
+    current_labels = current_labels[1:] 
     for current_label in current_labels:
         filter_img = current_img == current_label
         # Get 3d black/white image of current
         cleaned_current_color = colors[current_num]
-        # (cleaned_current_color != [0, 0, 0]).all(axis=2) outputs a 2d boolean array and is used to index a 3d array
+        # (cleaned_current_color != [0, 0, 0]).all(axis=2) outputs a 2d boolean array and is used to index a 3d array 
         cleaned_current_color[(cleaned_current_color != [0, 0, 0]).any(axis=2)] = [255, 255, 255]
         cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [0, 255, 0]
         past = current_img_group
         for past_num in range(current_num):
-            # test_num = 1
-            # if past_num != test_num and current_num != test_num:
-            #     continue
+            test_num = 0
+            if past_num != test_num and current_num != test_num:
+                continue
             past_img = past[past_num]
             if (past_img == current_label).any():
                 filter_past = past_img == current_label
@@ -94,13 +94,3 @@ for current_num, current_img_group in enumerate(labels):
                 print("Current: {}, Past: {}, Label Num: {}".format(current_num, past_num, current_label))
                 cv.waitKey()
                 cv.destroyAllWindows()
-
-
-
-
-
-
-
-
-
-
