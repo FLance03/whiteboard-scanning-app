@@ -1,3 +1,4 @@
+from xml.etree.ElementTree import tostring
 import cv2 as cv
 import numpy as np
 import math
@@ -6,7 +7,7 @@ def empty():
     pass
 
 def resize(img):
-    scale_percent = 40 # percent of original size
+    scale_percent =  80 # percent of original size
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -54,7 +55,7 @@ def Preprocessing1(img):
     if height >= 1080 or width >= 1920:
         threshold = 1800
     elif height >= 700 or width >= 1200:
-        threshold = 900
+        threshold = 800
     elif height >= 500 or width >= 500:
         threshold = 600
     else:
@@ -208,3 +209,12 @@ def Preprocessing1(img):
 # retval = Preprocessing1(img)
 # cv.imshow('retval', resize(retval))
 # cv.waitKey()
+
+
+# test for many
+# for i in range(3, 7):
+#     img = cv.imread(str(i)+'.png')
+#     retval = Preprocessing1(img)
+#     cv.imshow(str(i), resize(retval))
+#     cv.waitKey()
+#     cv.destroyAllWindows()
