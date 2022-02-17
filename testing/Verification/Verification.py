@@ -77,7 +77,7 @@ for current_num, current_img_group in enumerate(labels):
         cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [0, 255, 0]
         past = current_img_group
         for past_num in range(current_num):
-            test_num = 7
+            test_num = 2
             if past_num != test_num and current_num != test_num:
                 continue
             past_img = past[past_num]

@@ -53,7 +53,7 @@ def Preprocessing1(img):
     height = img.shape[0]
     # Really need to find a formula for threshold
     if height >= 1080 or width >= 1920:
-        threshold = 1800
+        threshold = 900
     elif height >= 700 or width >= 1200:
         threshold = 800
     elif height >= 500 or width >= 500:
