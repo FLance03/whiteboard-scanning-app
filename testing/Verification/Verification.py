@@ -77,9 +77,9 @@ for current_num, current_img_group in enumerate(labels):
         cleaned_current_color[np.logical_and((cleaned_current_color == [255, 255, 255]).all(axis=2), filter_img)] = [0, 255, 0]
         past = current_img_group
         for past_num in range(current_num):
-            # test_num = 1
-            # if past_num != test_num and current_num != test_num:
-            #     continue
+            test_num = 7
+            if past_num != test_num and current_num != test_num:
+                continue
             past_img = past[past_num]
             if (past_img == current_label).any():
                 filter_past = past_img == current_label
@@ -89,8 +89,8 @@ for current_num, current_img_group in enumerate(labels):
             #     np.logical_or((current_img == [0, 0, 0]).all(axis=2),
             # np.logical_or((current_img == [255, 255, 255]).all(axis=2), (current_img == color).all(axis=2)))
                 # (current_img == color).all(axis=2) returns a 2d array from a 3d so add new axis in filter_img
-                cv.imshow("" + str(current_num), ResizeWithAspectRatio(cleaned_current_color.astype(np.uint8), height=500))
-                cv.imshow("" + str(past_num), ResizeWithAspectRatio(cleaned_past_color.astype(np.uint8), height=500))
+                cv.imshow("" + str(current_num), ResizeWithAspectRatio(cleaned_current_color.astype(np.uint8), width=600))
+                cv.imshow("" + str(past_num), ResizeWithAspectRatio(cleaned_past_color.astype(np.uint8), width=600))
                 print("Current: {}, Past: {}, Label Num: {}".format(current_num, past_num, current_label))
                 cv.waitKey()
                 cv.destroyAllWindows()

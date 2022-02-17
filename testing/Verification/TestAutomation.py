@@ -1,12 +1,13 @@
 import numpy as np
 import cv2 as cv
+import pandas as pd
 
 
 def GetPrecision(evaluation, output):
     blackPixels = (output < 75).all(axis=2)
     # Make sure its colored clearly
     # evaluatedPixels = (np.max(evaluation, axis=2) - np.min(evaluation, axis=2)) > 100
-    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 200).any(axis=2))
+    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 240).any(axis=2))
     # Include for testing only the black pixels of the output image and those that are properly colored on evaluation
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
@@ -41,34 +42,54 @@ def GetRecall(positive, evaluation, output):
     not_found = np.logical_and(includedForTesting, np.logical_not(intersection))
     return np.sum(includedForTesting), np.sum(not_found)
 
-
-img_num = 0
+dir_num = 1
+data = []
 while True:
-    output = cv.imread(str(img_num) + 'o.jpg')
-    positive = cv.imread(str(img_num) + 'p.jpg')
-    negative = cv.imread(str(img_num) + 'n.jpg')
-
-    if output is None:
+    test = cv.imread(f'./{dir_num}/0o.jpg')
+    if test is None:
         break
+    img_num = 0
+    while True:
+        output = cv.imread(f'./{dir_num}/{img_num}o.jpg')
+        positive = cv.imread(f'./{dir_num}/{img_num}p.jpg')
+        negative = cv.imread(f'./{dir_num}/{img_num}n.jpg')
 
-    max_height = max(output.shape[0], positive.shape[0], negative.shape[0])
-    max_width = max(output.shape[1], positive.shape[1], negative.shape[1])
-    if output.shape[0] != max_height or output.shape[1] != max_width:
-        output = np.pad(output, [(0, max_height - output.shape[0]), (0, max_width - output.shape[1]), (0, 0)],
-       mode='constant', constant_values=255)
-    if positive.shape[0] != max_height or positive.shape[1] != max_width:
-        positive = np.pad(positive, [(0, max_height - positive.shape[0]), (0, max_width - positive.shape[1]), (0, 0)],
-       mode='constant', constant_values=255)
-    if negative.shape[0] != max_height or negative.shape[1] != max_width:
-        negative = np.pad(negative, [(0, max_height - negative.shape[0]), (0, max_width - negative.shape[1]), (0, 0)],
-       mode='constant', constant_values=255)
+        if output is None:
+            break
 
-    tp, fp = GetPrecision(positive, output)
-    trues, fn = GetRecall(positive, negative, output)
-    num_black = np.sum((output < 75).all(axis=2))
-    precision, recall = tp / (tp + fp) if trues > 0 else np.nan, tp / (tp + fn) if trues > 0 else np.nan
-    print("Image: {0}\nTP: {1}\nFP: {2}\nFN: {3}\ntrues: {4}\nink pixels: {5}"
-                        .format(img_num, tp, fp, fn, trues, num_black, precision, recall))
-    print()
-    # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
-    img_num += 1
+        max_height = max(output.shape[0], positive.shape[0], negative.shape[0])
+        max_width = max(output.shape[1], positive.shape[1], negative.shape[1])
+        if output.shape[0] != max_height or output.shape[1] != max_width:
+            output = np.pad(output, [(0, max_height - output.shape[0]), (0, max_width - output.shape[1]), (0, 0)],
+           mode='constant', constant_values=255)
+        if positive.shape[0] != max_height or positive.shape[1] != max_width:
+            positive = np.pad(positive, [(0, max_height - positive.shape[0]), (0, max_width - positive.shape[1]), (0, 0)],
+           mode='constant', constant_values=255)
+        if negative.shape[0] != max_height or negative.shape[1] != max_width:
+            negative = np.pad(negative, [(0, max_height - negative.shape[0]), (0, max_width - negative.shape[1]), (0, 0)],
+           mode='constant', constant_values=255)
+
+        tp, fp = GetPrecision(positive, output)
+        trues, fn = GetRecall(positive, negative, output)
+        num_black = np.sum((output < 75).all(axis=2))
+        precision, recall = tp / (tp + fp) if trues > 0 else np.nan, tp / (tp + fn) if trues > 0 else np.nan
+        print("Image: {0}\nTP: {1}\nFP: {2}\nFN: {3}\ntrues: {4}\nink pixels: {5}"
+                            .format(img_num, tp, fp, fn, trues, num_black, precision, recall))
+        print()
+        assert tp <= trues
+        data.append({
+            'dir_num': dir_num,
+            'img_num': img_num,
+            'TP': tp,
+            'FP': fp,
+            'FN': fn,
+            'trues': trues,
+            'ink_pixels': num_black,
+            'precision': precision,
+            'recall': recall,
+        })
+
+        # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
+        img_num += 1
+    dir_num += 1
+pd.DataFrame(data).to_excel('Data.xlsx')
