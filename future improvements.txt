@@ -7,3 +7,6 @@
 - maybe ML instead the group of CCs not per cell?
 - give preference to nearer photos timewise
 - it reports as redundant with a box so even if something inside (like a table or number) is not redundant it becomes included
+
+- use the relative distances of CCs in the past and present
+- the squared thing gets worse when the figure gets larger and less dense with black pixels
