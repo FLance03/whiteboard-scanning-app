@@ -7,7 +7,7 @@ def GetPrecision(evaluation, output):
     blackPixels = (output < 75).all(axis=2)
     # Make sure its colored clearly
     # evaluatedPixels = (np.max(evaluation, axis=2) - np.min(evaluation, axis=2)) > 100
-    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 240).any(axis=2))
+    evaluatedPixels = np.logical_and((evaluation > 100).any(axis=2), (evaluation < 240).any(axis=2))
     # Include for testing only the black pixels of the output image and those that are properly colored on evaluation
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
@@ -30,10 +30,10 @@ def GetPrecision(evaluation, output):
 
 def GetRecall(positive, evaluation, output):
     blackPixels = (output < 75).all(axis=2)
-    evaluatedPixels = np.logical_and((evaluation > 75).any(axis=2), (evaluation < 240).any(axis=2))
+    evaluatedPixels = np.logical_and((evaluation > 100).any(axis=2), (evaluation < 240).any(axis=2))
     includedForTesting = np.logical_and(blackPixels, evaluatedPixels)
 
-    positivePixels = np.logical_and((positive > 75).any(axis=2), (positive < 240).any(axis=2))
+    positivePixels = np.logical_and((positive > 100).any(axis=2), (positive < 240).any(axis=2))
     positiveBlue = positive[:, :, 0].astype(np.int16) - positive[:, :, 2].astype(np.int16) > 50
     correctRedundancy = np.logical_and(positivePixels, positiveBlue)
 
@@ -92,4 +92,4 @@ while True:
         # print("Image: {0}, TP + FN: {1}, FN: {2}".format(img_num, *GetRecall(positive, negative, output)))
         img_num += 1
     dir_num += 1
-pd.DataFrame(data).to_excel('Data.xlsx')
+# pd.DataFrame(data).to_excel('Data.xlsx')
