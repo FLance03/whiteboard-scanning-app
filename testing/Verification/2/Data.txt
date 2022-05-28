@@ -1,0 +1,10 @@
+Image Number 2 time:  28.206700801849365
+Image Number 3 time:  52.62565541267395
+Image Number 4 time:  63.02063250541687
+Image Number 5 time:  62.467713594436646
+Image Number 6 time:  108.70674777030945
+Image Number 7 time:  119.62625765800476
+Image Number 8 time:  101.86649942398071
+Image Number 9 time:  75.59864902496338
+Image Number 10 time:  80.12309956550598
+Total Time:  792.4079434871674

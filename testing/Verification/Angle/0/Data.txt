@@ -1,0 +1,15 @@
+Time:  32.640795946121216
+
+Image: 0
+TP: 134
+FP: 222
+FN: 2199
+trues: 2333
+ink pixels: 4530
+
+Image: 1
+TP: 147
+FP: 246
+FN: 1837
+trues: 1984
+ink pixels: 3140

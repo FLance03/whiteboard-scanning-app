@@ -1,0 +1,32 @@
+1.jpg -> (0, 1269), (2987, 1157), (0, 4307), (2987, 4886), 
+
+Time:  584.5546636581421
+
+
+Image: 0
+TP: 4731
+FP: 4912
+FN: 6537
+trues: 11268
+ink pixels: 17057
+
+Image: 1
+TP: 5345
+FP: 6008
+FN: 3748
+trues: 9093
+ink pixels: 25391
+
+Image: 2
+TP: 0
+FP: 12281
+FN: 14970
+trues: 14970
+ink pixels: 21978
+
+Image: 3
+TP: 5601
+FP: 3697
+FN: 6014
+trues: 11605
+ink pixels: 22396

@@ -1,0 +1,43 @@
+Time:  791.8885631561279
+
+Image: 0
+TP: 9877
+FP: 6415
+FN: 8506
+trues: 18383
+ink pixels: 19109
+
+Image: 1
+TP: 6468
+FP: 10573
+FN: 13589
+trues: 20011
+ink pixels: 20511
+
+Image: 2
+TP: 16983
+FP: 448
+FN: 3235
+trues: 20160
+ink pixels: 20660
+
+Image: 3
+TP: 14039
+FP: 3931
+FN: 6217
+trues: 20256
+ink pixels: 20757
+
+Image: 4
+TP: 22198
+FP: 2777
+FN: 3961
+trues: 26159
+ink pixels: 27183
+
+Image: 5
+TP: 25442
+FP: 438
+FN: 933
+trues: 26375
+ink pixels: 27548
